@@ -10,8 +10,8 @@ export default function HomePage() {
       <HeroSection />
       <FeaturedPackages />
       <TrustSection />
-      <AITripPlannerTeaser />
       <AppDownloadSection />
+      <AITripPlannerTeaser />
     </main>
   );
 }
