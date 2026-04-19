@@ -123,9 +123,33 @@ export default function SafariDetailPage({ params }: { params: Promise<{ slug: s
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
   if (!pkg) return <div className="min-h-screen bg-background flex items-center justify-center">Package not found</div>;
 
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": pkg.name,
+    "description": pkg.destination + " safari experience. " + pkg.highlights.join(", "),
+    "image": pkg.images[0],
+    "offers": {
+      "@type": "Offer",
+      "price": pkg.price_usd,
+      "priceCurrency": "USD",
+      "availability": pkg.available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "url": `https://axelotours.co.ke/safaris/${pkg.slug}`
+    },
+    "brand": {
+      "@type": "Brand",
+      "name": "Axelo Tours"
+    }
+  };
+
   return (
     <main className="min-h-screen bg-background pb-32">
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
         {/* Top Header Section with Pattern */}
+
         <div className="relative pt-32 pb-16 overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
             
@@ -189,12 +213,25 @@ export default function SafariDetailPage({ params }: { params: Promise<{ slug: s
             {/* Gallery Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-16 rounded-[2.5rem] overflow-hidden bg-gray-100 p-2 border border-border/40 shadow-sm">
                 <div className="md:col-span-2 relative aspect-[4/3] group cursor-pointer overflow-hidden rounded-3xl">
-                    <Image src={pkg.images[0]} alt="Hero" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <Image 
+                        src={pkg.images[0]} 
+                        alt="Hero" 
+                        fill 
+                        priority
+                        className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                 </div>
                 <div className="grid md:col-span-2 grid-cols-2 gap-4">
                     {pkg.images.slice(1, 5).map((img, i) => (
                          <div key={i} className="relative aspect-square group cursor-pointer overflow-hidden rounded-3xl">
-                            <Image src={img} alt="Detail" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <Image 
+                                src={img} 
+                                alt="Detail" 
+                                fill 
+                                className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                                sizes="(max-width: 768px) 50vw, 25vw"
+                            />
                             {i === 3 && pkg.images.length > 5 && (
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-lg">
                                     +{pkg.images.length - 5} More

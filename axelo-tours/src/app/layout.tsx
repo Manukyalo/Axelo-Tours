@@ -14,18 +14,48 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Axelo Tours & Safari | Premium Kenya Safari Experiences",
-  description: "Experience the wild like never before. AI-powered safari planning, luxury tented camps, and seamless bookings for the modern explorer.",
-  keywords: ["Safari", "Kenya", "Maasai Mara", "AI Travel", "Luxury Safari", "Amboseli"],
+  metadataBase: new URL("https://axelotours.co.ke"),
+  title: {
+    default: "Axelo Tours & Safari Ltd | Premium Kenya Safari Experiences",
+    template: "%s | Axelo Tours",
+  },
+  description: "Experience the wild like never before. Kenya premier safari company — real-time booking, M-Pesa, expert guides.",
+  keywords: ["Safari", "Kenya", "Maasai Mara", "AI Travel", "Luxury Safari", "Amboseli", "M-Pesa Booking"],
   openGraph: {
-    title: "Axelo Tours & Safari | Premium Kenya Safari Experiences",
-    description: "AI-powered safari planning and luxury experiences in Kenya.",
-    url: "https://axelo-tours.vercel.app",
+    title: "Axelo Tours & Safari Ltd | Premium Kenya Safari Experiences",
+    description: "Kenya premier safari company — real-time booking, M-Pesa, expert guides.",
+    url: "https://axelotours.co.ke",
     siteName: "Axelo Tours",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Axelo Tours & Safari Ltd",
+      },
+    ],
     locale: "en_US",
     type: "website",
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Axelo Tours & Safari Ltd",
+    description: "Kenya premier safari company — real-time booking, M-Pesa, expert guides.",
+    images: ["/og-image.png"],
+  },
 };
+
 
 import { ChatWidget } from "@/components/chat/ChatWidget";
 

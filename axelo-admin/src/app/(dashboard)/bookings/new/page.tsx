@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
-  ChevronLeft, 
-  Calendar, 
-  CreditCard, 
-  Package as PackageIcon, 
-  Users, 
-  Save, 
+import {
+  ChevronLeft,
+  Calendar,
+  CreditCard,
+  Package as PackageIcon,
+  Users,
+  Save,
   Loader2,
   AlertCircle
 } from "lucide-react";
@@ -24,11 +24,11 @@ import { toast } from "react-hot-toast";
 export default function NewBookingPage() {
   const router = useRouter();
   const supabase = createClient();
-  
+
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<SafariPackage[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  
+
   const [formData, setFormData] = useState({
     package_id: "",
     travel_date: format(addDays(new Date(), 30), "yyyy-MM-dd"),
@@ -74,9 +74,9 @@ export default function NewBookingPage() {
     }
 
     setLoading(true);
-    
+
     const pkg = packages.find(p => p.id === formData.package_id);
-    const returnDate = pkg 
+    const returnDate = pkg
       ? format(addDays(new Date(formData.travel_date), pkg.duration_days), "yyyy-MM-dd")
       : formData.travel_date;
 
@@ -124,9 +124,9 @@ export default function NewBookingPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+
           {/* Section 1: Client Selection */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4"
@@ -135,12 +135,12 @@ export default function NewBookingPage() {
               <Users className="w-4 h-4" />
               <span>Client Selection</span>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Select Client</label>
-              <ClientSearchSelect 
-                selectedId={selectedClient?.id} 
-                onSelect={setSelectedClient} 
+              <ClientSearchSelect
+                selectedId={selectedClient?.id}
+                onSelect={setSelectedClient}
               />
               {selectedClient && (
                 <div className="mt-3 p-3 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
@@ -148,10 +148,10 @@ export default function NewBookingPage() {
                     <p className="text-sm font-bold text-gray-900">{selectedClient.full_name}</p>
                     <p className="text-xs text-gray-400">{selectedClient.email}</p>
                   </div>
-                  <Button 
+                  <Button
                     type="button"
-                    variant="ghost" 
-                    size="sm" 
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setSelectedClient(null)}
                     className="text-gray-400 hover:text-red-500"
                   >
@@ -163,7 +163,7 @@ export default function NewBookingPage() {
           </motion.div>
 
           {/* Section 2: Trip Details */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -177,7 +177,7 @@ export default function NewBookingPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Safari Package</label>
-                <select 
+                <select
                   className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none pointer-events-auto"
                   value={formData.package_id}
                   onChange={(e) => setFormData(f => ({ ...f, package_id: e.target.value }))}
@@ -197,7 +197,7 @@ export default function NewBookingPage() {
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Travel Date</label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    <input 
+                    <input
                       type="date"
                       className="w-full h-10 pl-10 pr-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                       value={formData.travel_date}
@@ -208,7 +208,7 @@ export default function NewBookingPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Currency</label>
-                  <select 
+                  <select
                     className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={formData.currency}
                     onChange={(e) => setFormData(f => ({ ...f, currency: e.target.value as "USD" | "KES" }))}
@@ -222,7 +222,7 @@ export default function NewBookingPage() {
           </motion.div>
 
           {/* Section 3: Financials */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -237,7 +237,7 @@ export default function NewBookingPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Adults</label>
-                  <input 
+                  <input
                     type="number"
                     min="1"
                     className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -248,7 +248,7 @@ export default function NewBookingPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Children</label>
-                  <input 
+                  <input
                     type="number"
                     min="0"
                     className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -265,7 +265,7 @@ export default function NewBookingPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">
                     {formData.currency === "USD" ? "$" : "Sh"}
                   </span>
-                  <input 
+                  <input
                     type="number"
                     className="w-full h-10 pl-10 pr-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={formData.total_amount}
@@ -278,7 +278,7 @@ export default function NewBookingPage() {
           </motion.div>
 
           {/* Section 4: Status & Notes */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -293,7 +293,7 @@ export default function NewBookingPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Status</label>
-                  <select 
+                  <select
                     className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={formData.status}
                     onChange={(e) => setFormData(f => ({ ...f, status: e.target.value as any }))}
@@ -306,7 +306,7 @@ export default function NewBookingPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Payment</label>
-                  <select 
+                  <select
                     className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={formData.payment_status}
                     onChange={(e) => setFormData(f => ({ ...f, payment_status: e.target.value as any }))}
@@ -321,7 +321,7 @@ export default function NewBookingPage() {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Special Requests</label>
-                <textarea 
+                <textarea
                   rows={2}
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                   value={formData.special_requests}
@@ -338,8 +338,8 @@ export default function NewBookingPage() {
           <Link href="/bookings">
             <Button variant="ghost" type="button" className="rounded-xl px-6">Cancel</Button>
           </Link>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={loading}
             className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 py-6 h-auto text-base font-bold shadow-xl shadow-primary/20 gap-2"
           >
