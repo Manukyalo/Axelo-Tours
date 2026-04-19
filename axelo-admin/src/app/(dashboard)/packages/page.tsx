@@ -150,7 +150,10 @@ export default function PackagesPage() {
 
   const deletePackage = async (id: string) => {
     if (!confirm("Delete this package?")) return;
-    await supabase.from("packages").delete().eq("id", id);
+    const { error } = await supabase.from("packages").delete().eq("id", id);
+    if (error) {
+      alert("Cannot delete package. It may be linked to existing bookings or cost sheets.");
+    }
     fetchPackages();
   };
 

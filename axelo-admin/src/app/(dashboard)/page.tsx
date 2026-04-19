@@ -157,7 +157,7 @@ export default function AdminDashboard() {
           <Link href="/bookings/new" className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
             <Plus className="w-4 h-4" /> Add Booking
           </Link>
-          <Link href="/packages/new" className="flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
+          <Link href="/packages" className="flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
             <Plus className="w-4 h-4" /> Add Package
           </Link>
           <Link href="/bookings" className="flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
