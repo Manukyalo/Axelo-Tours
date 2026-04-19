@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { 
@@ -66,7 +66,8 @@ const MOCK_ITINERARY = [
     }
 ];
 
-export default function SafariDetailPage({ params }: { params: { slug: string } }) {
+export default function SafariDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const [pkg, setPkg] = useState<SafariPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -79,7 +80,7 @@ export default function SafariDetailPage({ params }: { params: { slug: string } 
             const { data, error } = await supabase
                 .from("packages")
                 .select("*")
-                .eq("slug", params.slug)
+                .eq("slug", slug)
                 .single();
 
             if (error || !data) {
@@ -117,7 +118,7 @@ export default function SafariDetailPage({ params }: { params: { slug: string } 
         }
     }
     fetchPackage();
-  }, [params.slug, supabase]);
+  }, [slug, supabase]);
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
   if (!pkg) return <div className="min-h-screen bg-background flex items-center justify-center">Package not found</div>;

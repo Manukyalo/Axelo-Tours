@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState, useEffect, useMemo, use } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
     ChevronRight, 
@@ -55,8 +55,8 @@ const INITIAL_STATE: BookingState = {
     specialRequests: '',
 };
 
-export default function BookingPage() {
-    const params = useParams();
+export default function BookingPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const router = useRouter();
     const [step, setStep] = useState<Step>(1);
     const [pkg, setPkg] = useState<SafariPackage | null>(null);
@@ -71,7 +71,7 @@ export default function BookingPage() {
             const { data, error } = await supabase
                 .from('packages')
                 .select('*')
-                .eq('id', params.id)
+                .eq('id', id)
                 .single();
 
             if (error) {
@@ -83,7 +83,7 @@ export default function BookingPage() {
             setLoading(false);
         }
         fetchPackage();
-    }, [params.id]);
+    }, [id]);
 
     const totalPrice = useMemo(() => {
         if (!pkg) return 0;
