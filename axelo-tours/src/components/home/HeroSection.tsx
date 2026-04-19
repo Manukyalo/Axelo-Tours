@@ -100,21 +100,11 @@ export function HeroSection() {
         onClose={() => setIsAIModalOpen(false)} 
       />
 
-      {/* Scroll Indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center text-white/40"
-      >
-        <span className="text-[10px] uppercase tracking-widest font-bold mb-2">Scroll to Travel</span>
-        <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-            <ChevronDown className="w-6 h-6" />
-        </motion.div>
-      </motion.div>
+      {/* AI Modal */}
+      <AIPortalModal 
+        isOpen={isAIModalOpen} 
+        onClose={() => setIsAIModalOpen(false)} 
+      />
     </section>
   );
 }
