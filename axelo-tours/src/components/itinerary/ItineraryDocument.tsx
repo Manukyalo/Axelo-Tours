@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
 import React from 'react';
 import { 
   Document, 
@@ -7,15 +7,10 @@ import {
   Text, 
   View, 
   StyleSheet, 
-  PDFViewer, 
-  renderToStream,
   Font,
   Image
 } from '@react-pdf/renderer';
 import { format } from "date-fns";
-
-// Register fonts if needed, or use defaults
-// Font.register({ family: 'Inter', src: '...' });
 
 const styles = StyleSheet.create({
   page: {
@@ -126,7 +121,13 @@ const styles = StyleSheet.create({
   }
 });
 
-const ItineraryDocument = ({ booking, pkg, client }: any) => (
+interface ItineraryDocumentProps {
+  booking: any;
+  pkg: any;
+  client: any;
+}
+
+export const ItineraryDocument = ({ booking, pkg, client }: ItineraryDocumentProps) => (
   <Document>
     <Page size="A4" style={styles.page}>
       {/* Header */}
@@ -136,28 +137,28 @@ const ItineraryDocument = ({ booking, pkg, client }: any) => (
           <Text style={{ fontSize: 8, color: '#6b7280' }}>Safari & Adventure Specialists</Text>
         </View>
         <View>
-          <Text style={styles.ref}>BOOKING REF: #{booking.id.slice(0, 8).toUpperCase()}</Text>
+          <Text style={styles.ref}>BOOKING REF: #{booking.id?.slice(0, 8).toUpperCase()}</Text>
           <Text style={styles.ref}>ISSUED ON: {format(new Date(), "PPP")}</Text>
         </View>
       </View>
 
       {/* Hero Section */}
       <View style={styles.heroBox}>
-        <Text style={styles.heroTitle}>{pkg.name}</Text>
-        <Text style={styles.heroSubtitle}>{pkg.destination} • {pkg.duration_days} Days Adventure</Text>
+        <Text style={styles.heroTitle}>{pkg?.name || "Safari Adventure"}</Text>
+        <Text style={styles.heroSubtitle}>{pkg?.destination} • {pkg?.duration_days} Days Adventure</Text>
         
         <View style={styles.grid}>
           <View style={styles.gridItem}>
             <Text style={styles.label}>Lead Traveler</Text>
-            <Text style={styles.value}>{client.full_name}</Text>
+            <Text style={styles.value}>{client?.full_name}</Text>
           </View>
           <View style={styles.gridItem}>
             <Text style={styles.label}>Start Date</Text>
-            <Text style={styles.value}>{format(new Date(booking.travel_date), "PPP")}</Text>
+            <Text style={styles.value}>{booking?.travel_date ? format(new Date(booking.travel_date), "PPP") : "TBD"}</Text>
           </View>
           <View style={styles.gridItem}>
             <Text style={styles.label}>Group Size</Text>
-            <Text style={styles.value}>{booking.num_adults + booking.num_children} Guests</Text>
+            <Text style={styles.value}>{(booking?.num_adults || 0) + (booking?.num_children || 0)} Guests</Text>
           </View>
         </View>
       </View>
@@ -165,7 +166,7 @@ const ItineraryDocument = ({ booking, pkg, client }: any) => (
       {/* Itinerary */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Daily Itinerary</Text>
-        {pkg.highlights.map((highlight: string, index: number) => (
+        {pkg?.highlights?.map((highlight: string, index: number) => (
           <View key={index} style={styles.dayRow}>
             <Text style={styles.dayNumber}>Day {index + 1}</Text>
             <View style={styles.dayContent}>
@@ -181,11 +182,13 @@ const ItineraryDocument = ({ booking, pkg, client }: any) => (
       {/* Preparation */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>What to Bring</Text>
-        <Text>• Valid Passport and Visa</Text>
-        <Text>• Comfortable safari clothing (neutral colors)</Text>
-        <Text>• Sunscreen, hat, and sunglasses</Text>
-        <Text>• Binoculars and camera</Text>
-        <Text>• Personal medications</Text>
+        <View>
+          <Text>• Valid Passport and Visa</Text>
+          <Text>• Comfortable safari clothing (neutral colors)</Text>
+          <Text>• Sunscreen, hat, and sunglasses</Text>
+          <Text>• Binoculars and camera</Text>
+          <Text>• Personal medications</Text>
+        </View>
       </View>
 
       {/* Footer */}
@@ -202,52 +205,3 @@ const ItineraryDocument = ({ booking, pkg, client }: any) => (
     </Page>
   </Document>
 );
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { bookingId: string } }
-) {
-  try {
-    const { bookingId } = await params;
-    const supabase = await createClient();
-
-    // 1. Auth & Verification
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return new NextResponse("Unauthorized", { status: 401 });
-
-    // 2. Fetch data and verify ownership
-    const { data: booking, error: bError } = await supabase
-      .from("bookings")
-      .select("*, package:packages(*), client:clients(*)")
-      .eq("id", bookingId)
-      .single();
-
-    if (bError || !booking) return new NextResponse("Booking not found", { status: 404 });
-
-    // Verify client belongs to auth user
-    if (booking.client.user_id !== user.id) {
-       return new NextResponse("Forbidden", { status: 403 });
-    }
-
-    // 3. Generate PDF
-    const stream = await renderToStream(
-      <ItineraryDocument 
-        booking={booking} 
-        pkg={booking.package} 
-        client={booking.client} 
-      />
-    );
-
-    // 4. Return as PDF
-    return new NextResponse(stream as any, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Itinerary-${bookingId.slice(0, 8)}.pdf"`,
-      },
-    });
-
-  } catch (error: any) {
-    console.error("PDF Generation Error:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
