@@ -8,7 +8,13 @@ const anthropic = new Anthropic({
 
 export async function POST(req: Request) {
   try {
-    const { competitors = TRACKED_COMPETITORS, analysis_type = "full" } = await req.json();
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch (e) {
+      // Ignore empty body error since we have defaults
+    }
+    const { competitors = TRACKED_COMPETITORS, analysis_type = "full" } = body;
 
     // Parallel execution of Intelligence Streams
     const [competitorAnalysis, searchIntelligence] = await Promise.all([
@@ -53,7 +59,8 @@ async function runCompetitorStream(competitors: any[]) {
   3. New product launches or focus areas in the last 30 days.
   4. Notable "missing" package types or gaps in their portfolio.
   
-  Return the result as a JSON array of objects: { name, prices, complaints: [], recent_launches: [], gaps: [] }`;
+  Return the result EXACTLY as a JSON array of objects: [{ "name": "...", "prices": "...", "complaints": [], "recent_launches": [], "gaps": [] }]
+  Do not include any text before or after the JSON.`;
 
   const response = await anthropic.messages.create({
     model: "claude-3-5-sonnet-20241022",
@@ -77,13 +84,14 @@ async function runSearchDemandStream() {
   5. Keyword gaps compared to industry leaders.
   6. Strategic opportunities (niche markets).
 
-  Return JSON: { 
-    search_trends: { trending_terms: [], social_trends: [], source_countries: [] },
-    keyword_gaps: { gaps: [] },
-    opportunities: [],
-    unanswered_questions: [],
-    summary: "Brief narrative summary"
-  }`;
+  Return ONLY valid JSON with this exact structure: { 
+    "search_trends": { "trending_terms": [], "social_trends": [], "source_countries": [] },
+    "keyword_gaps": { "gaps": [] },
+    "opportunities": [],
+    "unanswered_questions": [],
+    "summary": "Brief narrative summary"
+  }
+  Do not include any markdown formatting like \`\`\`json or text outside the JSON.`;
 
   const response = await anthropic.messages.create({
     model: "claude-3-5-sonnet-20241022",
