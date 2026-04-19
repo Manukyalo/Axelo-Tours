@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import {
   Search, Filter, Download, Eye, ChevronRight, ChevronLeft,
-  X, CheckCircle, XCircle, RefreshCw,
+  X, CheckCircle, XCircle, RefreshCw, Plus
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
@@ -97,9 +98,16 @@ export default function BookingsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
           <p className="text-gray-500 text-sm">{total} total bookings</p>
         </div>
-        <Button onClick={exportCSV} variant="outline" className="gap-2">
-          <Download className="w-4 h-4" /> Export CSV
-        </Button>
+        <div className="flex items-center gap-3">
+          <Link href="/bookings/new">
+            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white rounded-xl">
+              <Plus className="w-4 h-4" /> New Booking
+            </Button>
+          </Link>
+          <Button onClick={exportCSV} variant="outline" className="gap-2 rounded-xl text-gray-600">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
