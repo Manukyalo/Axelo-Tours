@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ChatWidget } from "@/components/chat/ChatWidget";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,6 +41,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-body bg-background text-foreground selection:bg-primary/20">
         {children}
+        <ChatWidget />
         <Toaster position="bottom-right" />
       </body>
     </html>
