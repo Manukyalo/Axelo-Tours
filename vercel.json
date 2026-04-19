@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd axelo-tours && npm run build",
+  "installCommand": "cd axelo-tours && npm install",
+  "outputDirectory": "axelo-tours/.next",
+  "framework": "nextjs"
+}
