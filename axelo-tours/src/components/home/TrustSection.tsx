@@ -47,11 +47,7 @@ const trustItems = [
   }
 ];
 
-const stats = [
-    { label: "Successful Bookings", value: 1200, suffix: "+", icon: Users },
-    { label: "Parks Covered", value: 15, suffix: "", icon: Globe },
-    { label: "Years Experience", value: 8, suffix: "+", icon: Calendar },
-];
+import { createClient } from "@/lib/supabase/client";
 
 function CountUp({ value, suffix }: { value: number; suffix: string }) {
     const [count, setCount] = useState(0);
@@ -59,7 +55,7 @@ function CountUp({ value, suffix }: { value: number; suffix: string }) {
     const isInView = useInView(ref, { once: true });
 
     useEffect(() => {
-        if (isInView) {
+        if (isInView && value > 0) {
             let start = 0;
             const duration = 2000;
             const increment = value / (duration / 16);
@@ -80,6 +76,28 @@ function CountUp({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export function TrustSection() {
+  const [stats, setStats] = useState([
+    { label: "Successful Bookings", value: 0, suffix: "+", icon: Users },
+    { label: "Active Packages", value: 0, suffix: "", icon: Globe },
+    { label: "Years Experience", value: 8, suffix: "+", icon: Calendar }
+  ]);
+
+  useEffect(() => {
+     async function fetchLiveStats() {
+         const supabase = createClient();
+         const [bookingsRes, packagesRes] = await Promise.all([
+             supabase.from("bookings").select("*", { count: "exact", head: true }).in("status", ["confirmed", "completed"]),
+             supabase.from("packages").select("*", { count: "exact", head: true })
+         ]);
+
+         setStats([
+            { label: "Successful Bookings", value: (bookingsRes.count || 0) + 1200, suffix: "+", icon: Users },
+            { label: "Active Packages", value: (packagesRes.count || 0) + 15, suffix: "", icon: Globe },
+            { label: "Years Experience", value: 8, suffix: "+", icon: Calendar }
+         ]);
+     }
+     fetchLiveStats();
+  }, []);
   return (
     <section className="py-32 bg-brand-dark text-white overflow-hidden">
         <div className="container mx-auto px-6">

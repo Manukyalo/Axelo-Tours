@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/layout/Navbar";
+import { ExitIntentPopup } from "@/components/home/ExitIntentPopup";
 import Link from "next/link";
 import { Globe, Camera, X, MessageCircle } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function PublicLayout({
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <main className="flex-grow">{children}</main>
+      <ExitIntentPopup />
       
       {/* Footer */}
       <footer className="bg-brand-dark text-white pt-20 pb-10">
