@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturedPackages } from "@/components/home/FeaturedPackages";
 import { TrustSection } from "@/components/home/TrustSection";
+import { ManageBookingSection } from "@/components/home/ManageBookingSection";
 import { AITripPlannerTeaser } from "@/components/home/AITripPlannerTeaser";
 import { AppDownloadSection } from "@/components/home/AppDownloadSection";
 
@@ -10,6 +11,7 @@ export default function HomePage() {
       <HeroSection />
       <FeaturedPackages />
       <TrustSection />
+      <ManageBookingSection />
       <AppDownloadSection />
       <AITripPlannerTeaser />
     </main>

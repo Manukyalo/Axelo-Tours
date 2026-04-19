@@ -11,6 +11,7 @@ const links = [
   { name: "Safaris", href: "/safaris" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
+  { name: "Client Portal", href: "/portal" },
 ];
 
 export function Navbar() {

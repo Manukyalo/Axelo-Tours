@@ -42,9 +42,9 @@ export default function PublicLayout({
             <div>
               <h4 className="font-display font-bold text-lg mb-6">Explore</h4>
               <ul className="space-y-4">
-                {["Safaris", "Day Trips", "AI Trip Planner", "About Us", "Contact"].map((link) => (
+                {["Safaris", "Client Portal", "Day Trips", "AI Trip Planner", "About Us", "Contact"].map((link) => (
                   <li key={link}>
-                    <Link href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
+                    <Link href={link === "Client Portal" ? "/portal" : "#"} className="text-gray-400 hover:text-white transition-colors duration-300">
                       {link}
                     </Link>
                   </li>
