@@ -19,6 +19,7 @@ import {
   Mail,
   Handshake,
   BookOpen,
+  Building2,
   Settings,
   LogOut,
   ChevronLeft,
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
   { label: "Calls",       href: "/calls",        icon: Phone },
   { label: "Outreach",    href: "/outreach",     icon: Mail },
   { label: "Partners",    href: "/partners",     icon: Handshake },
+  { label: "Properties",  href: "/properties",   icon: Building2 },
   { label: "Blog",        href: "/blog",         icon: BookOpen },
   { label: "Settings",    href: "/settings",     icon: Settings },
 ];
