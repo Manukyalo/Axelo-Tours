@@ -60,21 +60,21 @@ function StatCard({ label, value, sub, icon: Icon, trend, color }: {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+      className="bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 transition-all group"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center`}>
-          <Icon className="w-6 h-6 text-white" />
+      <div className="flex items-start justify-between mb-6">
+        <div className={`w-14 h-14 rounded-3xl ${color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+          <Icon className="w-7 h-7 text-white" />
         </div>
         {trend && (
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1">
-            <ArrowUpRight className="w-3 h-3" />{trend}
+          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full flex items-center gap-1.5 uppercase tracking-widest">
+            <ArrowUpRight className="w-3.5 h-3.5 stroke-[3px]" />{trend}
           </span>
         )}
       </div>
-      <p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
-      <p className="text-sm text-gray-500 font-medium">{label}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+      <p className="text-3xl font-black text-gray-900 tracking-tighter mb-1.5">{value}</p>
+      <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.2em]">{label}</p>
+      {sub && <p className="text-[10px] text-gray-400 mt-2 font-bold italic opacity-60">{sub}</p>}
     </motion.div>
   );
 }
@@ -148,52 +148,56 @@ export default function AdminDashboard() {
   return (
     <div className="p-10 space-y-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 px-2">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 tracking-tighter flex items-center gap-3">
-             <span className="w-2 h-10 bg-primary rounded-full hidden md:block" />
-             Operational Mission Control
+          <div className="flex items-center gap-2 mb-3">
+             <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-primary/70">Strategic Command Hub</span>
+          </div>
+          <h1 className="text-5xl font-black text-gray-900 tracking-tightest flex items-center gap-5 leading-none">
+             Operational Central
           </h1>
-          <p className="text-gray-500 text-lg mt-1 font-medium italic">
-            Command center for real-time safari operations and financial throughput.
+          <p className="text-gray-400 text-lg mt-3 font-bold italic opacity-70">
+            Real-time synchronization of guest trajectories and financial throughput.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/bookings" className="flex items-center h-12 gap-2 border border-gray-200 bg-white text-gray-700 px-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+        <div className="flex items-center gap-4">
+          <Link href="/bookings" className="flex items-center h-14 gap-3 bg-white text-gray-900 px-8 rounded-[20px] text-xs font-black uppercase tracking-widest hover:bg-gray-50 border border-gray-100 transition-all active:scale-95 shadow-sm">
             Operational Hub
           </Link>
-          <Link href="/bookings/new" className="flex items-center h-12 gap-2 bg-gradient-to-r from-primary to-emerald-600 text-white px-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-emerald-100">
+          <Link href="/bookings/new" className="flex items-center h-14 gap-3 bg-gray-900 text-white px-8 rounded-[20px] text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-gray-200">
             <Plus className="w-5 h-5 stroke-[3px]" /> Deploy Booking
           </Link>
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {[
           { label: "Active Revenue Pipeline", value: formatCurrency(thisMonthKES, "KES"), icon: TrendingUp, color: "emerald", sub: "30-Day Velocity", trend: "+8.4%" },
           { label: "Booking Transmissions", value: String(totalBookings), icon: CalendarCheck, color: "primary", sub: "Total Life Cycle", trend: "+12.1%" },
           { label: "Critical Actions Required", value: String(pendingCount), icon: Clock, color: "amber", sub: "Pending Manifests", trend: "Attention Needed" },
           { label: "Available Inventory", value: String(activePackages), icon: Package, color: "indigo", sub: "Live Experiences", trend: `${packages.length} Total` },
         ].map(({ label, value, icon: Icon, color, sub, trend }) => (
-          <div key={label} className="group bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all hover:-translate-y-1">
-             <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-2xl bg-${color === 'primary' ? 'emerald' : color}-50 flex items-center justify-center text-${color === 'primary' ? 'emerald' : color}-600 group-hover:scale-110 transition-all shadow-sm`}>
-                   <Icon className="w-6 h-6" />
+          <div key={label} className="group bg-white p-10 rounded-[44px] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all hover:-translate-y-2 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-gray-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+             <div className="flex items-start justify-between mb-8">
+                <div className={`w-16 h-16 rounded-[24px] bg-${color === 'primary' ? 'emerald' : color}-50 flex items-center justify-center text-${color === 'primary' ? 'emerald' : color}-600 group-hover:scale-110 transition-all shadow-sm border border-${color === 'primary' ? 'emerald' : color}-100/50`}>
+                   <Icon className="w-8 h-8 stroke-[1.5px]" />
                 </div>
                 <div className="text-right">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-2">{label}</p>
                    {trend && (
-                     <span className={`text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full ${trend.includes('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                     <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${trend.includes('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} border border-current/10`}>
                         {trend}
                      </span>
                    )}
                 </div>
              </div>
-             <p className="text-3xl font-black text-gray-900 tracking-tighter mb-1">
+             <p className="text-4xl font-black text-gray-900 tracking-tightest mb-2 leading-none">
                 {value}
              </p>
-             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{sub}</p>
+             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter opacity-60 italic">{sub}</p>
           </div>
         ))}
       </div>

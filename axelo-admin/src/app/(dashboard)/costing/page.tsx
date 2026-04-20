@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calculator, Bus, MapPin, Bed, FileText, Plus, X, 
   Sparkles, RefreshCw, AlertTriangle, CheckCircle2, ChevronRight, Save
@@ -67,26 +67,40 @@ export default function CostingAgentPage() {
   // Fetch initial data
   useEffect(() => {
     async function loadData() {
-      const [{ data: pfees }, { data: props }] = await Promise.all([
-        supabase.from('park_fees').select('*'),
-        supabase.from('properties').select('id, name, destination')
-      ]);
+      // Fetch parks
+      const { data: pfees } = await supabase.from('park_fees').select('*');
       if (pfees) setParkFeesList(pfees);
-      if (props) setPropertiesList(props);
-      
       if (pfees && pfees.length > 0) setSelectedParkId(pfees[0].id);
+
+      // Fetch properties
+      const { data: props } = await supabase.from('properties').select('id, name, destination');
+      if (props) setPropertiesList(props);
       
       setLoading(false);
     }
     loadData();
   }, [supabase]);
 
+  // Derived properties filtered by destination
+  const filteredProperties = propertiesList.filter(p => p.destination === destination);
+
+  // Auto-detect season based on current date
+  useEffect(() => {
+    const month = new Date().getMonth(); // 0-11
+    // East Africa Seasons:
+    // Peak: July, August, September, December
+    // High: January, February, June, October
+    // Low: March, April, May, November
+    if ([6, 7, 8, 11].includes(month)) setSeason("peak");
+    else if ([2, 3, 4, 10].includes(month)) setSeason("low");
+    else setSeason("high");
+  }, []);
+
   // Calculations
   const calcParkFees = () => {
     const park = parkFeesList.find(p => p.id === selectedParkId);
     if (!park) return 0;
-    // Basic logic: Fee per day * duration_days * pax
-    return park.fee_usd * durationDays * (numAdults + (numChildren * 0.5)); // 50% for kids
+    return park.fee_usd * durationDays * (numAdults + (numChildren * 0.5));
   };
 
   const calcAccommodation = () => {
@@ -95,13 +109,13 @@ export default function CostingAgentPage() {
 
   const calcTransport = () => {
     if (transportType === "road") {
-      const roadUsd = (transportKm * 20) / 130; // KES 20/km divided by approx exchange 130 KES/USD
-      const driverUsd = driverDays * 20; // Default KES 2500 ~ $20
+      const roadUsd = (transportKm * 20) / 130;
+      const driverUsd = driverDays * 20;
       return Math.round(roadUsd + driverUsd);
     } else if (transportType === "charter") {
       return transportCharterUsd;
     }
-    return 0; // scheduled could be per person etc.
+    return 0;
   };
 
   const calcAdditional = () => additionalCosts.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
@@ -111,7 +125,6 @@ export default function CostingAgentPage() {
   
   const b2cTotalUsd = netTotalUsd / (1 - (b2cMarginPct / 100));
   const b2bTotalUsd = netTotalUsd / (1 - (b2bMarginPct / 100));
-  
   const grossMarginUsd = b2cTotalUsd - netTotalUsd;
 
   const handleAddCost = () => {
@@ -153,27 +166,70 @@ export default function CostingAgentPage() {
   };
 
   const saveCostSheet = async () => {
-    alert("Saved conceptually. Add actual DB save hook.");
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.from('cost_sheets').insert([{
+        title: `${destination} - ${numAdults} Pax`,
+        destination,
+        duration_days: durationDays,
+        duration_nights: durationNights,
+        num_adults: numAdults,
+        num_children: numChildren,
+        client_type: clientType,
+        property_id: propertyId || null,
+        lodge_tier: lodgeTier,
+        meal_plan: mealPlan,
+        rate_per_person_night: ratePerPersonNight,
+        season,
+        transport_type: transportType,
+        transport_km: transportKm,
+        transport_charter_usd: transportCharterUsd,
+        driver_days: driverDays,
+        additional_costs: additionalCosts,
+        b2c_margin_pct: b2cMarginPct,
+        b2b_margin_pct: b2bMarginPct,
+        net_total_usd: netTotalUsd,
+        b2c_per_person_usd: b2cTotalUsd / (totalPax || 1),
+        b2b_per_person_usd: b2bTotalUsd / (totalPax || 1),
+        gross_margin_usd: grossMarginUsd,
+        status: 'saved'
+      }]);
+
+      if (error) throw error;
+      alert("Cost sheet saved to Logistics Vault");
+    } catch (err: any) {
+      alert("Save failed: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return <div className="p-8 flex items-center justify-center">Loading Data Modules...</div>;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      {/* Tactical Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 px-2">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-            <Calculator className="w-8 h-8 text-primary" /> Costing Engine
+          <div className="flex items-center gap-3 mb-4">
+            <span className="w-3 h-3 rounded-full bg-indigo-500 animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-indigo-500/70">Financial Logistics Node</span>
+          </div>
+          <h1 className="text-5xl font-black text-gray-900 tracking-tightest leading-none">
+            Costing_Engine
           </h1>
-          <p className="text-gray-500 mt-1 uppercase tracking-widest text-xs font-bold">Dynamic Live Quoting & AI Margin Analysis</p>
+          <p className="text-gray-400 mt-4 font-bold max-w-xl text-lg leading-relaxed opacity-70 italic">
+            Dynamic live quoting with deep AI margin analysis and competitive risk scanning.
+          </p>
         </div>
-        <div className="flex gap-4">
-          <Button onClick={runAiAnalysis} disabled={aiAnalyzing} className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold border-none shadow-lg shadow-indigo-500/30">
-            {aiAnalyzing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            AI Margin Check
+        
+        <div className="flex items-center gap-4">
+          <Button onClick={runAiAnalysis} disabled={aiAnalyzing} className="h-14 px-8 bg-gradient-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] active:scale-[0.98] text-white font-black text-[11px] uppercase tracking-widest border-none shadow-2xl shadow-indigo-200 transition-all">
+            {aiAnalyzing ? <RefreshCw className="w-5 h-5 mr-3 animate-spin" /> : <Sparkles className="w-5 h-5 mr-3" />}
+            AI_Margin_Audit
           </Button>
-          <Button onClick={saveCostSheet} className="bg-gray-900 text-white hover:bg-black font-bold border-none">
-            <Save className="w-4 h-4 mr-2" /> Save Cost Sheet
+          <Button onClick={saveCostSheet} className="h-14 px-8 bg-gray-900 text-white hover:bg-black font-black text-[11px] uppercase tracking-widest border-none transition-all active:scale-[0.95] shadow-xl">
+            <Save className="w-5 h-5 mr-3" /> Commit_To_Logistics
           </Button>
         </div>
       </div>
@@ -181,41 +237,47 @@ export default function CostingAgentPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT PANEL: Inputs */}
         <div className="lg:col-span-8 space-y-6">
-          <SectionHeader icon={<MapPin className="text-blue-500 w-5 h-5"/>} title="Trip Config" />
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4">
-            <InputGroup label="Destination">
-              <input value={destination} onChange={e => setDestination(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20" />
-            </InputGroup>
-            <InputGroup label="Duration (Days)">
-              <input type="number" value={durationDays} onChange={e => setDurationDays(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20" />
-            </InputGroup>
-            <InputGroup label="Nights">
-              <input type="number" value={durationNights} onChange={e => setDurationNights(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20" />
-            </InputGroup>
-            <InputGroup label="Client Type">
-              <select value={clientType} onChange={e => setClientType(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20">
-                <option value="non_resident">Non-Resident</option>
-                <option value="resident">Resident</option>
-                <option value="east_african">East African</option>
-              </select>
-            </InputGroup>
-            
-            <InputGroup label="Adults">
-              <input type="number" value={numAdults} onChange={e => setNumAdults(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20" />
-            </InputGroup>
-            <InputGroup label="Children">
-              <input type="number" value={numChildren} onChange={e => setNumChildren(Number(e.target.value))} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20" />
-            </InputGroup>
-            <InputGroup label="Park Fees (DB Ref)">
-              <select value={selectedParkId} onChange={e => setSelectedParkId(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20 col-span-2 text-ellipsis overflow-hidden">
-                {parkFeesList.map(p => <option key={p.id} value={p.id}>{p.park_name} - {p.client_type} - {p.season}</option>)}
-              </select>
-            </InputGroup>
-          </div>
+            <SectionHeader icon={<MapPin className="text-blue-500 w-5 h-5"/>} title="TRIP_DEPLOYMENT_CONFIG" />
+            <div className="bg-white p-10 rounded-[40px] border border-gray-100 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-8">
+              <InputGroup label="Core Destination">
+                <input value={destination} onChange={e => setDestination(e.target.value)} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all" />
+              </InputGroup>
+              <InputGroup label="Duration Day Cycle">
+                <input type="number" value={durationDays} onChange={e => setDurationDays(Number(e.target.value))} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all" />
+              </InputGroup>
+              <InputGroup label="Nights Log">
+                <input type="number" value={durationNights} onChange={e => setDurationNights(Number(e.target.value))} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all" />
+              </InputGroup>
+              <InputGroup label="Demographic Node">
+                <select value={clientType} onChange={e => setClientType(e.target.value)} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all cursor-pointer">
+                  <option value="non_resident">NON_RESIDENT</option>
+                  <option value="resident">LOCAL_RESIDENT</option>
+                  <option value="east_african">EAST_AFRICAN_EAC</option>
+                </select>
+              </InputGroup>
+              
+              <InputGroup label="Adult PAX">
+                <input type="number" value={numAdults} onChange={e => setNumAdults(Number(e.target.value))} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all" />
+              </InputGroup>
+              <InputGroup label="Child PAX">
+                <input type="number" value={numChildren} onChange={e => setNumChildren(Number(e.target.value))} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all" />
+              </InputGroup>
+              <InputGroup label="Park Intel (Reference)">
+                <select value={selectedParkId} onChange={e => setSelectedParkId(e.target.value)} className="w-full px-5 py-4 border-gray-100 border rounded-2xl bg-gray-50/50 text-sm font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all col-span-2 text-ellipsis overflow-hidden cursor-pointer">
+                  {parkFeesList.map(p => <option key={p.id} value={p.id}>{p.park_name}::{p.client_type}::{p.season}</option>)}
+                </select>
+              </InputGroup>
+            </div>
 
           <SectionHeader icon={<Bed className="text-orange-500 w-5 h-5"/>} title="Accommodation" />
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4">
-             <InputGroup label="Tier">
+            <InputGroup label="Property">
+              <select value={propertyId} onChange={e => setPropertyId(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20">
+                <option value="">Select Property</option>
+                {filteredProperties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </InputGroup>
+            <InputGroup label="Tier">
               <select value={lodgeTier} onChange={e => setLodgeTier(e.target.value)} className="w-full px-3 py-2 border rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-primary/20">
                 <option value="budget">Budget</option>
                 <option value="mid_range">Mid-Range</option>
@@ -388,7 +450,7 @@ export default function CostingAgentPage() {
 
 function SectionHeader({ icon, title }: { icon: React.ReactNode, title: string }) {
   return (
-    <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3 border-b border-gray-100 pb-2">
+    <h2 className="flex items-center gap-3 text-xs font-black text-gray-400 mb-5 tracking-[0.25em] uppercase">
       {icon} {title}
     </h2>
   );
@@ -396,8 +458,8 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode, title: string }
 
 function InputGroup({ label, children }: { label: string, children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5 flex flex-col">
-      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{label}</label>
+    <div className="space-y-3 flex flex-col">
+      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
       {children}
     </div>
   );

@@ -11,6 +11,8 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { SafariPackage } from "@/types";
+import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { 
   Dialog, 
   DialogContent, 
@@ -31,13 +33,24 @@ type FormData = {
   best_season: string[]; available: boolean; images: string[];
 };
 
-const empty: FormData = {
-  name: "", slug: "", destination: "", duration_days: 3,
-  price_usd: 0, price_kes: 0, category: "luxury", difficulty: "easy",
-  group_size_min: 1, group_size_max: 12,
-  highlights: [""], inclusions: [""], exclusions: [""],
-  best_season: [], available: true, images: [],
-};
+const PackageSchema = z.object({
+  name: z.string().min(5, "Asset name must be at least 5 characters"),
+  slug: z.string().min(3, "System slug is required"),
+  destination: z.string().min(3, "Destination locus must be specific"),
+  duration_days: z.number().min(1, "Minimum duration is 1 day"),
+  price_usd: z.number().min(1, "Ledger value must be greater than 0"),
+  price_kes: z.number().min(1),
+  category: z.string().min(1),
+  difficulty: z.string().min(1),
+  group_size_min: z.number().min(1),
+  group_size_max: z.number().min(1, "Maximum group size is required"),
+  highlights: z.array(z.string().min(1)).min(1, "At least one experience node is required"),
+  inclusions: z.array(z.string().min(1)).min(1, "Operational inclusions are required"),
+  exclusions: z.array(z.string()),
+  best_season: z.array(z.string()).min(1, "Seasonal operational matrix must have at least one month"),
+  available: z.boolean(),
+  images: z.array(z.string()).min(1, "Visual asset vault cannot be empty"),
+});
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -80,6 +93,15 @@ export default function PackagesPage() {
   const [uploading, setUploading] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [packageToDelete, setPackageToDelete] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const empty: FormData = {
+    name: "", slug: "", destination: "", duration_days: 3,
+    price_usd: 0, price_kes: 0, category: "luxury", difficulty: "easy",
+    group_size_min: 1, group_size_max: 12,
+    highlights: [""], inclusions: [""], exclusions: [""],
+    best_season: [], available: true, images: [],
+  };
 
   const fetchPackages = useCallback(async () => {
     setLoading(true);
@@ -111,6 +133,7 @@ export default function PackagesPage() {
       available: pkg.available ?? true, 
       images: pkg.images || [],
     });
+    setErrors({});
     setModalOpen(true);
   };
 
@@ -147,21 +170,41 @@ export default function PackagesPage() {
   };
 
   const save = async () => {
-    setSaving(true);
+    setErrors({});
     const payload = {
       ...form,
       highlights: form.highlights.filter(Boolean),
       inclusions: form.inclusions.filter(Boolean),
       exclusions: form.exclusions.filter(Boolean),
     };
-    if (editing) {
-      await supabase.from("packages").update(payload).eq("id", editing.id);
-    } else {
-      await supabase.from("packages").insert(payload);
+
+    const validation = PackageSchema.safeParse(payload);
+    if (!validation.success) {
+      const fieldErrors: Record<string, string> = {};
+      validation.error.errors.forEach(err => {
+        if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
+      });
+      setErrors(fieldErrors);
+      toast.error("Validation Error: Review identity matrix and operational nodes.");
+      return;
     }
-    setSaving(false);
-    setModalOpen(false);
-    fetchPackages();
+
+    setSaving(true);
+    try {
+      if (editing) {
+        await supabase.from("packages").update(payload).eq("id", editing.id);
+        toast.success("Asset configuration updated successfully.");
+      } else {
+        await supabase.from("packages").insert(payload);
+        toast.success("New asset provisioned to registry.");
+      }
+      setModalOpen(false);
+      fetchPackages();
+    } catch (error) {
+      toast.error("Database commit failed. Check network availability.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleAvailable = async (pkg: SafariPackage) => {
@@ -182,160 +225,175 @@ export default function PackagesPage() {
     !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.destination.toLowerCase().includes(search.toLowerCase())
   );
 
-  return (
-    <div className="p-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+    <div className="p-8 space-y-10 bg-[#fafafa] min-h-screen">
+      {/* Tactical Asset Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
-            <div className="w-2 h-10 bg-gradient-to-b from-primary to-indigo-600 rounded-full hidden md:block" />
-            Safari Asset Collections
-          </h1>
-          <p className="text-gray-500 mt-2 font-bold italic">
-            Manage your high-yield safari offerings and destination IP.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-6 px-6 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm mr-4">
-            <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Assets</p>
-              <p className="text-xl font-black text-gray-900 tracking-tighter leading-none">{packages.length}</p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-primary/20">
+              <Database className="w-3.5 h-3.5" />
+              Live Asset Vault
             </div>
-            <div className="w-[1px] h-8 bg-gray-100" />
-            <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Node</p>
-              <p className="text-xl font-black text-emerald-600 tracking-tighter leading-none">{packages.filter(p => p.available).length}</p>
+            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Inventory Synchronized
             </div>
           </div>
-          <Button 
-            onClick={openNew} 
-            className="gap-2 bg-gray-900 hover:bg-black text-white font-black uppercase tracking-[0.2em] text-xs h-14 px-8 rounded-2xl transition-all shadow-2xl shadow-gray-200 hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Plus className="w-5 h-5 stroke-[3px]" />
-            Provision Asset
-          </Button>
+          <h1 className="text-5xl font-black text-gray-900 tracking-tighter leading-none mb-4 uppercase">
+            Safari <span className="text-primary italic">Packages</span>
+          </h1>
+          <p className="text-gray-500 font-medium max-w-xl text-lg leading-relaxed italic">
+            Architecting world-class experiences. Configure high-fidelity safari blueprints, seasonal operational matrices, and premium pricing nodes.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 bg-white p-2 rounded-[24px] shadow-sm border border-gray-100">
+            <Button 
+                onClick={openNew}
+                className="gap-3 bg-gray-900 hover:bg-black text-white font-bold h-12 px-8 rounded-2xl shadow-xl shadow-gray-200 transition-all flex items-center group"
+            >
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-all duration-500" />
+                Provision New Asset
+            </Button>
         </div>
       </div>
 
-      <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden flex flex-col mb-12">
-          <div className="p-8 border-b border-gray-50 bg-gray-50/30 flex flex-wrap items-center justify-between gap-6">
-               <div className="relative w-full max-w-md">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 stroke-[3px]" />
-                    <input 
-                        value={search} onChange={e => setSearch(e.target.value)} 
-                        placeholder="Search assets by name or destination..."
-                        className="w-full h-14 pl-14 pr-6 bg-white border border-gray-100 rounded-2xl text-sm font-bold tracking-tight shadow-inner focus:ring-4 focus:ring-primary/5 transition-all outline-none" 
-                    />
-               </div>
-               <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-sm text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-primary' : ''}`} />
-                    Last Sync: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-               </div>
-          </div>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="relative group flex-grow max-w-md">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors stroke-[3px]" />
+                <input 
+                    value={search} 
+                    onChange={e => setSearch(e.target.value)} 
+                    placeholder="Query Asset Manifest..."
+                    className="w-full h-14 pl-16 pr-6 bg-white border border-gray-100 rounded-[24px] text-sm font-bold tracking-tight shadow-sm focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none" 
+                />
+            </div>
+            
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] bg-white px-4 py-2 rounded-full border border-gray-100 shadow-sm flex items-center gap-2">
+                <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                {packages.length} Operational Units Deployed
+            </div>
+        </div>
 
-          <div className="overflow-x-auto">
-             <table className="w-full text-left border-collapse">
-                <thead>
-                    <tr className="bg-white border-b border-gray-100">
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Asset Identity</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Locus / Target</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Duration Node</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Ledger Value</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Class Node</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Operational</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Sequencing</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                    {loading ? (
-                        <tr><td colSpan={7} className="p-20 text-center"><RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto opacity-20"/></td></tr>
-                    ) : filtered.length === 0 ? (
-                        <tr><td colSpan={7} className="p-20 text-center text-gray-400 font-black uppercase tracking-[0.2em] italic">Null assets found in registry.</td></tr>
-                    ) : filtered.map(pkg => (
-                        <tr key={pkg.id} className="hover:bg-gray-50/50 transition-all group cursor-default border-b border-gray-50">
-                            <td className="px-8 py-6">
-                                <div className="flex items-center gap-6">
-                                    {pkg.images[0] ? (
-                                        <div className="relative w-24 h-16 rounded-[20px] overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500 ring-2 ring-transparent group-hover:ring-primary/20">
-                                            <Image src={pkg.images[0]} alt={pkg.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        </div>
-                                    ) : (
-                                        <div className="w-24 h-16 rounded-[20px] bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-300">
-                                            <FileText className="w-6 h-6" />
-                                        </div>
-                                    )}
-                                    <div className="max-w-[280px]">
-                                        <div className="font-black text-gray-900 truncate tracking-tighter text-[16px] leading-tight uppercase italic">
-                                            {pkg.name || "Untitled_Asset"}
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-1.5 font-mono text-[9px] uppercase tracking-widest text-gray-400">
-                                          <div className="w-1 h-1 rounded-full bg-gray-200" />
-                                          {pkg.slug || "NULL_SLUG"}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td className="px-8 py-6">
-                                <div className="flex items-center gap-3 font-black text-gray-900 text-[13px] tracking-tight uppercase">
-                                    <MapPin className="h-4 w-4 text-primary" />
-                                    {pkg.destination}
-                                </div>
-                            </td>
-                            <td className="px-8 py-6">
-                                <div className="flex items-center gap-2 text-gray-500 font-black text-[11px] uppercase tracking-tight bg-gray-100/50 px-3 py-1.5 rounded-full border border-gray-100 w-fit">
-                                    <Clock className="w-3 h-3" />
-                                    {pkg.duration_days}D / {pkg.duration_days - 1}N
-                                </div>
-                            </td>
-                            <td className="px-8 py-6">
-                                <div className="space-y-0.5">
-                                    <div className="font-black text-emerald-600 text-base tracking-tighter">{formatCurrency(pkg.price_usd, "USD")}</div>
-                                    <div className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{formatCurrency(pkg.price_kes, "KES")} REF</div>
-                                </div>
-                            </td>
-                            <td className="px-8 py-6">
-                                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border shadow-sm ${
-                                    pkg.category === 'luxury' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 
-                                    pkg.category === 'budget' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                                    'bg-gray-50 text-gray-500 border-gray-100'
-                                }`}>
-                                    {pkg.category} Node
-                                </span>
-                            </td>
-                            <td className="px-8 py-6">
-                                <button onClick={() => toggleAvailable(pkg)} className="transition-all hover:scale-105 active:scale-95 text-left">
-                                    {pkg.available
-                                        ? <div className="flex items-center gap-2.5 text-emerald-600 font-black text-[9px] uppercase tracking-[0.2em] bg-emerald-50/50 px-4 py-2 rounded-full border border-emerald-100 shadow-inner">
-                                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                            Active_Sync
-                                          </div>
-                                        : <div className="flex items-center gap-2.5 text-gray-400 font-black text-[9px] uppercase tracking-[0.2em] bg-gray-50 px-4 py-2 rounded-full border border-gray-100 shadow-inner">
-                                            <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
-                                            Archived_Node
-                                          </div>
-                                    }
-                                </button>
-                            </td>
-                            <td className="px-8 py-6 text-right space-x-2">
-                                 <button onClick={() => openEdit(pkg)} className="w-10 h-10 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5 transition-all shadow-sm">
-                                    <Edit2 className="w-4 h-4 mx-auto" />
-                                 </button>
-                                 <button 
-                                    onClick={() => {
-                                      setPackageToDelete(pkg.id);
-                                      setDeleteConfirmOpen(true);
-                                    }} 
-                                    className="w-10 h-10 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all shadow-sm"
-                                 >
-                                    <Trash2 className="w-4 h-4 mx-auto" />
-                                 </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-             </table>
+        {loading ? (
+          <div className="bg-white rounded-[40px] border border-gray-50 shadow-sm flex flex-col items-center justify-center py-32 gap-6">
+             <div className="relative">
+                <RefreshCw className="w-12 h-12 animate-spin text-primary/20" />
+                <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-primary animate-pulse" />
+             </div>
+             <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.3em]">Querying Global Repositories...</p>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm flex flex-col items-center justify-center py-32 gap-8">
+            <div className="w-24 h-24 rounded-[36px] bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-200">
+               <Database className="w-12 h-12" />
+            </div>
+            <div className="text-center space-y-2">
+                <p className="text-lg font-black text-gray-900 uppercase tracking-tighter italic">Zero Asset Signals Detected</p>
+                <p className="text-sm font-medium text-gray-400 max-w-[250px] mx-auto">No packages matching your current query parameters exist in the active nexus.</p>
+            </div>
+            <Button onClick={openNew} variant="outline" className="rounded-2xl border-gray-100 font-bold px-8 h-12">Register Initial Asset</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence>
+              {filtered.map((pkg, idx) => (
+                <motion.div
+                  key={pkg.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="group bg-white rounded-[40px] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500 overflow-hidden flex flex-col relative"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    {pkg.images?.[0] ? (
+                      <Image src={pkg.images[0]} alt={pkg.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-200">
+                        <ImagePlus className="w-12 h-12" />
+                      </div>
+                    )}
+                    <div className="absolute top-6 left-6 flex flex-col gap-2">
+                        <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-primary" />
+                            {pkg.destination}
+                        </div>
+                    </div>
+                    <div className="absolute top-6 right-6">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); toggleAvailable(pkg); }}
+                            className={`p-2.5 rounded-2xl backdrop-blur transition-all ${pkg.available ? "bg-emerald-500/90 text-white shadow-emerald-500/20" : "bg-gray-900/90 text-gray-400"}`}
+                        >
+                            {pkg.available ? <Zap className="w-4 h-4 fill-current" /> : <ToggleLeft className="w-5 h-5" />}
+                        </button>
+                    </div>
+                    <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent transition-opacity opacity-0 group-hover:opacity-100 duration-500" />
+                  </div>
+
+                  <div className="p-8 flex-grow flex flex-col">
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="px-3 py-1 bg-gray-50 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-gray-100">
+                            {pkg.category}
+                        </span>
+                        <div className="flex items-center gap-1.5 text-amber-500">
+                            <Award className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">{pkg.difficulty}</span>
+                        </div>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-4 group-hover:text-primary transition-colors uppercase italic leading-none">
+                      {pkg.name}
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                        <div className="bg-gray-50/50 p-4 rounded-[24px] border border-gray-100/50 group-hover:border-primary/10 transition-all">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 leading-none">Price Vector</p>
+                            <p className="text-xl font-black text-gray-900 tracking-tighter">{formatCurrency(pkg.price_usd, "USD")}</p>
+                        </div>
+                        <div className="bg-gray-50/50 p-4 rounded-[24px] border border-gray-100/50 group-hover:border-primary/10 transition-all">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 leading-none">Duration</p>
+                            <p className="text-xl font-black text-gray-900 tracking-tighter">{pkg.duration_days} <span className="text-sm">Days</span></p>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
+                        <div className="flex items-center -space-x-2">
+                             {pkg.highlights?.slice(0, 3).map((h, i) => (
+                                <div key={i} className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm" title={h}>
+                                    <Sparkles className="w-3.5 h-3.5 text-primary/40" />
+                                </div>
+                             ))}
+                             {pkg.highlights?.length > 3 && (
+                                <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-[9px] font-black text-gray-400">
+                                    +{pkg.highlights.length - 3}
+                                </div>
+                             )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => openEdit(pkg)}
+                                className="p-3 bg-gray-50 hover:bg-black text-gray-400 hover:text-white rounded-2xl transition-all duration-300"
+                            >
+                                <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                                onClick={() => {
+                                  setPackageToDelete(pkg.id);
+                                  setDeleteConfirmOpen(true);
+                                }}
+                                className="p-3 bg-gray-50 hover:bg-red-500 text-gray-400 hover:text-white rounded-2xl transition-all duration-300"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
@@ -380,6 +438,8 @@ export default function PackagesPage() {
                                     onChange={e => set("name", e.target.value)}
                                     placeholder="Enter destination name..."
                                 />
+                                {errors.name && <p className="text-red-500 text-[10px] font-black uppercase mt-2 ml-4">{errors.name}</p>}
+                            </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-10">
@@ -394,6 +454,7 @@ export default function PackagesPage() {
                                             placeholder="e.g. Serengeti, Mara..."
                                         />
                                     </div>
+                                    {errors.destination && <p className="text-red-500 text-[9px] font-black uppercase mt-1 ml-1">{errors.destination}</p>}
                                 </div>
                                 <div className="space-y-4">
                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1 block">System Slug Node</label>
@@ -405,6 +466,7 @@ export default function PackagesPage() {
                                             onChange={e => set("slug", e.target.value)}
                                         />
                                     </div>
+                                    {errors.slug && <p className="text-red-500 text-[9px] font-black uppercase mt-1 ml-1">{errors.slug}</p>}
                                 </div>
                             </div>
                         </div>
@@ -421,6 +483,7 @@ export default function PackagesPage() {
                                         onChange={e => set("price_usd", Number(e.target.value))}
                                     />
                                 </div>
+                                {errors.price_usd && <p className="text-red-500 text-[10px] font-black uppercase mt-1 ml-2">{errors.price_usd}</p>}
                                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest text-right pr-2">REF KES: {formatCurrency(form.price_kes, "KES")}</p>
                             </div>
 
@@ -489,7 +552,10 @@ export default function PackagesPage() {
                                 <ImagePlus className="w-6 h-6 text-primary" />
                                 Visual_Asset_Vault
                             </h3>
-                            <div className="px-5 py-2 bg-gray-50 border border-gray-100 rounded-full text-[10px] font-black text-gray-400 font-mono tracking-widest uppercase">Capacity: {form.images.length}/10</div>
+                            <div className="flex flex-col items-end">
+                                <div className="px-5 py-2 bg-gray-50 border border-gray-100 rounded-full text-[10px] font-black text-gray-400 font-mono tracking-widest uppercase">Capacity: {form.images.length}/10</div>
+                                {errors.images && <p className="text-red-500 text-[9px] font-black uppercase mt-2">{errors.images}</p>}
+                            </div>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                             {form.images.map((img, i) => (
