@@ -18,26 +18,61 @@ const anthropic = new Anthropic({
 
 export async function POST(req: Request) {
   try {
-    // Security: verify the request is from Vercel Cron or an authorised admin.
-    // Vercel sends the CRON_SECRET as a Bearer token in the Authorization header.
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.NEXT_PUBLIC_CRON_SECRET;
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    let requestedTopic = null;
+    const body = await req.json();
+    const mode = body.mode || "generate"; // "generate" or "refine"
     
-    try {
-        const body = await req.json();
-        if (body.topic) requestedTopic = body.topic;
-    } catch(e) {}
+    if (mode === "refine") {
+        const { currentContent, command, title } = body;
+        const refinePrompt = `You are Zara, the expert travel AI for Axelo Tours & Safari Ltd.
+        You are helping an editor refine a blog article.
+        
+        ARTICLE TITLE: "${title}"
+        CURRENT CONTENT:
+        ${currentContent}
+        
+        USER COMMAND: "${command}"
+        
+        Your task: Apply the command to the current content. 
+        - If they ask for more detail, expand the relevant sections.
+        - If they ask for SEO optimization, improve headers and keywords.
+        - If they ask for formatting, wrap text in proper HTML tags (H2, H3, P, B, I).
+        - Maintain the professional, adventurous tone of Axelo Tours.
+        
+        Return ONLY valid JSON with this exact structure:
+        {
+          "title": "...",
+          "meta_description": "...",
+          "content_html": "...",
+          "keywords": ["...", "..."],
+          "read_time_minutes": 5
+        }
+        Do not include any text outside the JSON block.`;
 
-    // Verify Admin or Cron (simple check for now, standard deployment should verify Supabase Auth or a CRON_SECRET)
-    // If it's the cron, we just pick a random topic from the list
+        const response = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 4000,
+            messages: [{ role: "user", content: refinePrompt }],
+        });
+
+        const text = (response.content[0] as any).text;
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Failed to parse JSON from Claude");
+        const refinedData = JSON.parse(jsonMatch[0]);
+
+        return Response.json({ success: true, refined: refinedData });
+    }
+
+    // Default: Generate Mode
+    const requestedTopic = body.topic;
     const finalTopic = requestedTopic || TOPICS[Math.floor(Math.random() * TOPICS.length)];
 
-    const prompt = `You are an expert travel writer and SEO specialist for Axelo Tours & Safari Ltd (Kenya's premier safari company).
+    const genPrompt = `You are an expert travel writer and SEO specialist for Axelo Tours & Safari Ltd (Kenya's premier safari company).
 Write a comprehensive, engaging, and SEO-optimised blog article on the topic: "${finalTopic}"
 
 Include:
@@ -62,7 +97,7 @@ Do not include any text outside the JSON block.`;
     const response = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20241022",
       max_tokens: 4000,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: genPrompt }],
     });
 
     const text = (response.content[0] as any).text;
@@ -84,17 +119,14 @@ Do not include any text outside the JSON block.`;
       content_html: blogData.content_html,
       keywords: blogData.keywords,
       read_time_minutes: blogData.read_time_minutes,
-      published: false, // Wait for admin review
+      published: false, 
     }).select().single();
 
-    if (error) {
-        console.error("Supabase Save Error:", error);
-        throw error;
-    }
+    if (error) throw error;
 
     return Response.json({ success: true, post: data });
   } catch (error: any) {
-    console.error("Blog Generation Error:", error);
+    console.error("Blog API Error:", error);
     return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 }

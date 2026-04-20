@@ -90,14 +90,22 @@ export default function PackagesPage() {
   const openEdit = (pkg: SafariPackage) => {
     setEditing(pkg);
     setForm({
-      name: pkg.name, slug: pkg.slug, destination: pkg.destination,
-      duration_days: pkg.duration_days, price_usd: pkg.price_usd, price_kes: pkg.price_kes,
-      category: pkg.category, difficulty: pkg.difficulty,
-      group_size_min: pkg.group_size_min, group_size_max: pkg.group_size_max,
-      highlights: pkg.highlights.length ? pkg.highlights : [""],
-      inclusions: pkg.inclusions.length ? pkg.inclusions : [""],
-      exclusions: pkg.exclusions.length ? pkg.exclusions : [""],
-      best_season: pkg.best_season, available: pkg.available, images: pkg.images,
+      name: pkg.name || "", 
+      slug: pkg.slug || "", 
+      destination: pkg.destination || "",
+      duration_days: pkg.duration_days || 1, 
+      price_usd: pkg.price_usd || 0, 
+      price_kes: pkg.price_kes || 0,
+      category: pkg.category || "standard", 
+      difficulty: pkg.difficulty || "moderate",
+      group_size_min: pkg.group_size_min || 1, 
+      group_size_max: pkg.group_size_max || 12,
+      highlights: (pkg.highlights || []).length ? pkg.highlights : [""],
+      inclusions: (pkg.inclusions || []).length ? pkg.inclusions : [""],
+      exclusions: (pkg.exclusions || []).length ? pkg.exclusions : [""],
+      best_season: pkg.best_season || [], 
+      available: pkg.available ?? true, 
+      images: pkg.images || [],
     });
     setModalOpen(true);
   };
@@ -214,8 +222,8 @@ export default function PackagesPage() {
                     ) : <div className="w-14 h-10 rounded-xl bg-gray-100" />}
                   </td>
                   <td className="px-5 py-4 font-bold text-gray-900 max-w-[180px]">
-                    <p className="truncate">{pkg.name}</p>
-                    <p className="text-xs text-gray-400 font-normal truncate">{pkg.slug}</p>
+                    <p className="truncate">{pkg.name || <span className="text-gray-300 italic">Unnamed Package</span>}</p>
+                    <p className="text-xs text-gray-400 font-normal truncate">{pkg.slug || "no-slug"}</p>
                   </td>
                   <td className="px-5 py-4 text-gray-600">{pkg.destination}</td>
                   <td className="px-5 py-4 text-gray-600">{pkg.duration_days}d</td>
@@ -413,7 +421,7 @@ export default function PackagesPage() {
             </div>
             <DialogTitle className="text-xl font-bold text-gray-900 border-0">Are you absolutely sure?</DialogTitle>
             <DialogDescription className="text-gray-500 mt-2">
-              This will permanently delete the package <span className="font-bold text-gray-900">"{packages.find(p => p.id === packageToDelete)?.name}"</span>. 
+              This will permanently delete the package <span className="font-bold text-gray-900">"{packages.find(p => p.id === packageToDelete)?.name || "this package"}"</span>. 
               This action cannot be undone and will remove it from all public sections of the website.
             </DialogDescription>
           </DialogHeader>

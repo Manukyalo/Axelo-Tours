@@ -41,6 +41,8 @@ export default function BlogList() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState<"edit" | "preview" | "split">("split");
+  const [zaraCommand, setZaraCommand] = useState("");
+  const [isRefining, setIsRefining] = useState(false);
   
   const supabase = createClient();
 
@@ -81,6 +83,45 @@ export default function BlogList() {
     setGenerating(false);
   };
 
+  const handleZaraCommand = async () => {
+    if (!zaraCommand.trim()) return;
+    setIsRefining(true);
+    const toastId = toast.loading("Zara is thinking...");
+    try {
+        const res = await fetch("/api/blog/generate", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET}`
+            },
+            body: JSON.stringify({
+                mode: "refine",
+                title: editorContent.title,
+                currentContent: editorContent.content_html,
+                command: zaraCommand
+            })
+        });
+        const data = await res.json();
+        if (data.success && data.refined) {
+            setEditorContent({
+                ...editorContent,
+                title: data.refined.title || editorContent.title,
+                content_html: data.refined.content_html || editorContent.content_html,
+                meta_description: data.refined.meta_description || editorContent.meta_description,
+                keywords: data.refined.keywords || editorContent.keywords,
+                read_time_minutes: data.refined.read_time_minutes || editorContent.read_time_minutes
+            });
+            setZaraCommand("");
+            toast.success("Article refined by Zara!", { id: toastId });
+        } else {
+            throw new Error(data.error || "Refinement failed");
+        }
+    } catch (e: any) {
+        toast.error(e.message || "Zara encountered an issue.", { id: toastId });
+    }
+    setIsRefining(false);
+  };
+
   const togglePublished = async (pkg: BlogPost) => {
     const nextState = !pkg.published;
     const { error } = await supabase
@@ -108,30 +149,28 @@ export default function BlogList() {
   const handleEdit = (post: BlogPost) => {
     setEditingPost(post);
     setEditorContent({
-        title: post.title,
-        slug: post.slug,
-        meta_description: post.meta_description,
-        content_html: post.content_html,
-        keywords: post.keywords,
-        read_time_minutes: post.read_time_minutes,
+        title: post.title || "",
+        slug: post.slug || "",
+        meta_description: post.meta_description || "",
+        content_html: post.content_html || "",
+        keywords: post.keywords || [],
+        read_time_minutes: post.read_time_minutes || 5,
     });
   };
 
   const createNewPost = () => {
     const newPost: Partial<BlogPost> = {
-        title: "Untitled Article",
-        slug: "untitled-" + Math.random().toString(36).substring(7),
-        meta_description: "Enter a meta description...",
-        content_html: "<h1>New Article</h1><p>Start writing here...</p>",
+        title: "Tempting Title...",
+        slug: "draft-" + Math.random().toString(36).substring(7),
+        meta_description: "",
+        content_html: "<p>Once upon a time in the Savannah...</p>",
         keywords: [],
         read_time_minutes: 5,
         published: false
     };
     
-    setEditingPost(null); // Explicitly null for "new"
-    setEditorContent(newPost as any);
-    // Open the modal by setting an "ID" that we'll check later
     setEditingPost({ id: "new" } as any);
+    setEditorContent(newPost as any);
   };
 
   const savePost = async () => {
@@ -224,8 +263,10 @@ export default function BlogList() {
                     ) : filtered.map(post => (
                         <tr key={post.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-6 py-4 max-w-[300px]">
-                                <div className="font-bold text-gray-900 truncate">{post.title}</div>
-                                <div className="text-xs text-gray-400 truncate mt-1">/{post.slug}</div>
+                                <div className="font-bold text-gray-900 truncate">
+                                    {post.title || <span className="text-gray-300 italic">Untitled Masterpiece</span>}
+                                </div>
+                                <div className="text-xs text-gray-400 truncate mt-1">/{post.slug || "no-slug"}</div>
                             </td>
                             <td className="px-6 py-4">
                                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${post.published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
@@ -263,107 +304,138 @@ export default function BlogList() {
 
       {/* Editor / Preview Modal */}
       <Dialog open={!!editingPost} onOpenChange={() => setEditingPost(null)}>
-        <DialogContent className="max-w-[95vw] w-[1400px] max-h-[95vh] h-[900px] overflow-hidden rounded-3xl p-0 border-0 flex flex-col">
-            <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <Edit2 className="w-5 h-5 text-primary" />
+        <DialogContent className="max-w-[98vw] w-[1600px] max-h-[96vh] h-[920px] overflow-hidden rounded-[2.5rem] p-0 border-0 flex flex-col shadow-2xl bg-white/95 backdrop-blur-2xl">
+            {/* Premium Header */}
+            <div className="bg-white/50 border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner">
+                        <Edit2 className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900">{editingPost?.id === "new" ? "Create New Article" : "Edit Article"}</h2>
-                        <div className="flex items-center gap-4 mt-1">
-                            <div className="flex bg-gray-100 p-1 rounded-lg">
-                                <button onClick={() => setViewMode("edit")} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "edit" ? "bg-white shadow-sm text-primary" : "text-gray-500"}`}>Code</button>
-                                <button onClick={() => setViewMode("split")} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "split" ? "bg-white shadow-sm text-primary" : "text-gray-500"}`}>Split</button>
-                                <button onClick={() => setViewMode("preview")} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "preview" ? "bg-white shadow-sm text-primary" : "text-gray-500"}`}>Preview</button>
+                        <h2 className="text-2xl font-black text-gray-900 leading-none">
+                            {editingPost?.id === "new" ? "New Masterpiece" : "Refining Article"}
+                        </h2>
+                        <div className="flex items-center gap-2 mt-2">
+                            <div className="flex bg-gray-100/80 p-1 rounded-xl backdrop-blur-sm">
+                                {[
+                                    { id: "edit", label: "Write", icon: Edit2 },
+                                    { id: "split", label: "Focus", icon: Code },
+                                    { id: "preview", label: "Live", icon: ExternalLink }
+                                ].map(tab => (
+                                    <button 
+                                        key={tab.id}
+                                        onClick={() => setViewMode(tab.id as any)} 
+                                        className={`flex items-center gap-2 px-4 py-1.5 text-xs font-black rounded-lg transition-all ${viewMode === tab.id ? "bg-white shadow-md text-primary" : "text-gray-400 hover:text-gray-600"}`}
+                                    >
+                                        <tab.icon className="w-3.5 h-3.5" />
+                                        {tab.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 mr-4 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
-                        <span className={`w-2 h-2 rounded-full ${editingPost?.published ? "bg-green-500 animate-pulse" : "bg-amber-500"}`} />
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{editingPost?.published ? "Live" : "Draft Mode"}</span>
+                
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-end mr-4">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                            <div className={`w-2 h-2 rounded-full ${editingPost?.published ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"}`} />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{editingPost?.published ? "Live Presence" : "Private Draft"}</span>
+                        </div>
+                        <span className="text-[10px] text-gray-300 font-mono mt-1 italic">Autosaved just now</span>
                     </div>
-                    <Button onClick={() => setEditingPost(null)} variant="ghost" className="rounded-xl font-medium">Cancel</Button>
-                    <Button onClick={savePost} disabled={isSaving} className="rounded-xl bg-primary hover:bg-primary/90 text-white min-w-[120px] font-bold gap-2 shadow-lg shadow-primary/20">
-                        {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        {isSaving ? "Saving..." : "Save Article"}
+                    <Button onClick={() => setEditingPost(null)} variant="ghost" className="rounded-2xl font-bold text-gray-400 hover:text-gray-900 h-12 px-6">Discard</Button>
+                    <Button 
+                        onClick={savePost} 
+                        disabled={isSaving} 
+                        className="rounded-2xl bg-gradient-to-r from-primary to-indigo-600 hover:scale-[1.02] active:scale-[0.98] transition-all text-white min-w-[160px] h-12 font-black gap-2 shadow-xl shadow-primary/20"
+                    >
+                        {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                        {isSaving ? "Publishing..." : "Ready to Live"}
                     </Button>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden flex bg-gray-50">
-                {/* Editor Side */}
+            <div className="flex-1 overflow-hidden flex bg-[#fbfbfc]">
+                {/* Editor Surface */}
                 {(viewMode === "edit" || viewMode === "split") && (
-                    <div className={`${viewMode === "split" ? "w-1/2" : "w-full"} h-full overflow-y-auto bg-white`}>
-                        <div className="max-w-4xl mx-auto p-8 space-y-8">
-                            <div className="grid grid-cols-1 gap-8">
-                                {/* Main Content Section */}
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 block">Article Title</label>
-                                        <input 
-                                            className="w-full h-14 px-6 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all font-black text-2xl placeholder:text-gray-300"
-                                            value={editorContent.title}
-                                            onChange={e => setEditorContent({...editorContent, title: e.target.value})}
-                                            placeholder="Enter a catchy title..."
-                                        />
-                                    </div>
-                                    
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-primary block font-mono">HTML Body Content</label>
-                                            <span className="text-[10px] text-gray-400 font-mono">Supports standard HTML tags</span>
-                                        </div>
-                                        <textarea 
-                                            className="w-full min-h-[550px] p-6 rounded-2xl border border-gray-100 bg-slate-900 text-slate-300 font-mono text-sm focus:ring-8 focus:ring-primary/5 transition-all resize-none leading-relaxed shadow-inner"
-                                            value={editorContent.content_html}
-                                            onChange={e => setEditorContent({...editorContent, content_html: e.target.value})}
-                                            placeholder="<p>Start writing your masterpiece...</p>"
-                                        />
+                    <div className={`${viewMode === "split" ? "w-[60%]" : "w-full"} h-full overflow-hidden flex flex-col bg-white border-r border-gray-50`}>
+                        {/* Writing Toolbar */}
+                        <div className="px-8 py-3 bg-gray-50/50 border-b border-gray-50 flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-gray-400 mr-2">Structure</span>
+                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500 font-black text-xs" onClick={() => setEditorContent({...editorContent, content_html: editorContent.content_html + "<h2>Heading 2</h2>\n"})}>H2</button>
+                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500 font-black text-xs" onClick={() => setEditorContent({...editorContent, content_html: editorContent.content_html + "<h3>Heading 3</h3>\n"})}>H3</button>
+                            <div className="w-px h-4 bg-gray-200 mx-1" />
+                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500" onClick={() => setEditorContent({...editorContent, content_html: editorContent.content_html + "<b>Bold Text</b>"})}><b>B</b></button>
+                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500 italic" onClick={() => setEditorContent({...editorContent, content_html: editorContent.content_html + "<i>Italic Text</i>"})}><i>I</i></button>
+                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500" onClick={() => setEditorContent({...editorContent, content_html: editorContent.content_html + '<a href="#" class="text-primary hover:underline">Link Text</a>'})}>Link</button>
+                            <div className="flex-1" />
+                            <button 
+                                onClick={generateAIArticle}
+                                className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] hover:bg-indigo-100 transition-all border border-indigo-100"
+                            >
+                                <Sparkles className="w-3 h-3" /> ZARA ASSIST
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+                            <div className="max-w-4xl mx-auto space-y-12">
+                                <div className="space-y-4">
+                                    <input 
+                                        className="w-full bg-transparent border-0 focus:ring-0 text-5xl font-black text-gray-900 placeholder:text-gray-100 selection:bg-primary/10"
+                                        value={editorContent.title}
+                                        onChange={e => setEditorContent({...editorContent, title: e.target.value})}
+                                        placeholder="Tempting Title..."
+                                    />
+                                    <div className="flex items-center gap-4 text-xs font-mono text-gray-400">
+                                        <span className="flex items-center gap-1.5"><Link className="w-3 h-3" /> /{editorContent.slug}</span>
+                                        <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {editorContent.read_time_minutes} min read</span>
                                     </div>
                                 </div>
 
-                                {/* Sidebar / Settings Section (Only shown in full Edit mode or at the bottom) */}
-                                <div className={`grid ${viewMode === "edit" ? "grid-cols-3" : "grid-cols-1"} gap-6 pt-8 border-t border-gray-50`}>
-                                    <div className="space-y-4">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">SEO Settings</h3>
-                                        <div>
-                                            <label className="text-[10px] font-bold text-gray-400 mb-1.5 block">URL Slug</label>
-                                            <div className="flex items-center bg-gray-50 rounded-xl px-3 border border-gray-100">
-                                                <span className="text-gray-300 text-xs mr-1 font-mono">/blog/</span>
+                                <div className="relative group">
+                                    <textarea 
+                                        className="w-full min-h-[600px] bg-transparent border-0 focus:ring-0 font-mono text-gray-600 text-base leading-relaxed resize-none p-0 selection:bg-primary/20"
+                                        value={editorContent.content_html}
+                                        onChange={e => setEditorContent({...editorContent, content_html: e.target.value})}
+                                        placeholder="<p>Enchant your readers here...</p>"
+                                    />
+                                </div>
+
+                                {/* SEO Metadata Section */}
+                                <div className="pt-12 border-t border-gray-50 space-y-8">
+                                    <div className="grid grid-cols-3 gap-8">
+                                        <div className="col-span-2 space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Search Meta Description</label>
+                                            <textarea 
+                                                className="w-full h-32 p-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all text-xs leading-relaxed font-medium text-gray-500"
+                                                value={editorContent.meta_description}
+                                                onChange={e => setEditorContent({...editorContent, meta_description: e.target.value})}
+                                                placeholder="Write a snippet that guarantees clicks..."
+                                            />
+                                            <div className="flex justify-between items-center text-[10px] font-black text-gray-300">
+                                                <span>Characters: {editorContent.meta_description.length}</span>
+                                                <span className={editorContent.meta_description.length > 160 ? "text-red-400" : "text-emerald-400"}>Recommended: 155-160</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-6">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Target Slug</label>
                                                 <input 
-                                                    className="flex-1 bg-transparent py-2.5 text-xs font-mono focus:outline-none"
+                                                    className="w-full p-4 rounded-xl bg-gray-50 border border-gray-100 text-xs font-mono"
                                                     value={editorContent.slug}
                                                     onChange={e => setEditorContent({...editorContent, slug: e.target.value})}
                                                 />
                                             </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-bold text-gray-400 mb-1.5 block">Read Time</label>
-                                            <div className="flex items-center bg-gray-50 rounded-xl px-3 border border-gray-100">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Read Time</label>
                                                 <input 
                                                     type="number"
-                                                    className="w-full bg-transparent py-2.5 text-xs focus:outline-none"
+                                                    className="w-full p-4 rounded-xl bg-gray-50 border border-gray-100 text-xs font-black"
                                                     value={editorContent.read_time_minutes}
                                                     onChange={e => setEditorContent({...editorContent, read_time_minutes: parseInt(e.target.value)})}
                                                 />
-                                                <span className="text-gray-400 text-[10px] font-bold uppercase ml-2">Mins</span>
                                             </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className={`${viewMode === "edit" ? "col-span-2" : ""} space-y-4`}>
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Search Presence</h3>
-                                        <div>
-                                            <label className="text-[10px] font-bold text-gray-400 mb-1.5 block">Meta Description (160 chars max)</label>
-                                            <textarea 
-                                                className="w-full h-[88px] px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all text-xs resize-none leading-normal"
-                                                value={editorContent.meta_description}
-                                                onChange={e => setEditorContent({...editorContent, meta_description: e.target.value})}
-                                                placeholder="Write a compelling summary for search results..."
-                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -372,16 +444,69 @@ export default function BlogList() {
                     </div>
                 )}
 
-                {/* Preview Side */}
+                {/* Preview Surface / Zara Sidebar */}
                 {(viewMode === "preview" || viewMode === "split") && (
-                    <div className={`${viewMode === "split" ? "w-1/2" : "w-full"} h-full overflow-y-auto bg-gray-50 p-8`}>
-                        <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden min-h-full">
-                            <div className="p-8 md:p-12 prose prose-gray prose-h1:text-3xl prose-h1:font-black prose-headings:font-bold prose-lg prose-a:text-primary">
-                                <h4 className="text-primary text-xs font-black uppercase tracking-[0.2em] mb-4">Live Preview</h4>
-                                <h1 className="mb-8">{editorContent.title}</h1>
-                                <div dangerouslySetInnerHTML={{ __html: editorContent.content_html }} />
+                    <div className={`${viewMode === "split" ? "w-[40%]" : "w-full"} h-full overflow-hidden flex flex-col bg-[#f8f9fa]`}>
+                        {/* Preview Header */}
+                        <div className="px-8 py-3 bg-white border-b border-gray-100 flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Public Rendering</span>
+                            <div className="flex gap-2">
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-400/20" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-400/20" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/20" />
                             </div>
                         </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-8 lg:p-12">
+                            <div className="max-w-xl mx-auto bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 overflow-hidden min-h-full border border-white">
+                                <div className="p-10 md:p-16 prose prose-slate prose-h1:text-4xl prose-h1:font-black prose-h2:text-2xl prose-h2:font-black prose-p:text-gray-600 prose-p:leading-loose prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
+                                    <div className="mb-12">
+                                        <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em] bg-primary/10 px-3 py-1 rounded-full mb-6 inline-block">Destination Story</span>
+                                        <h1 className="leading-tight mb-4 tracking-tighter">{editorContent.title || "Your Epic Journey Begins Here..."}</h1>
+                                        <div className="h-1.5 w-20 bg-primary rounded-full" />
+                                    </div>
+                                    <div dangerouslySetInnerHTML={{ __html: editorContent.content_html }} />
+                                    
+                                    {/* Brand Signature */}
+                                    <div className="mt-20 pt-10 border-t border-gray-100 flex items-center gap-4 not-prose">
+                                        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white font-black italic shadow-lg shadow-primary/30">A</div>
+                                        <div>
+                                            <p className="text-xs font-black text-gray-900">Axelo Tours & Safari Ltd</p>
+                                            <p className="text-[10px] font-medium text-gray-400 italic">Exploring the wild, protecting the soul.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Zara Interaction Pad */}
+                        {viewMode === "split" && (
+                            <div className="shrink-0 p-6 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.02)]">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                                        <Sparkles className="w-4 h-4 text-white" />
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest text-indigo-600">Zara Intelligence</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <input 
+                                        className="flex-1 bg-gray-50 border-gray-100 rounded-xl px-4 py-2 text-xs font-medium focus:ring-4 focus:ring-indigo-50 transition-all outline-none"
+                                        placeholder="Ask Zara to 'Optimize for SEO' or 'Add travel tips'..."
+                                        value={zaraCommand}
+                                        onChange={e => setZaraCommand(e.target.value)}
+                                        onKeyDown={e => e.key === "Enter" && handleZaraCommand()}
+                                        disabled={isRefining}
+                                    />
+                                    <Button 
+                                        onClick={handleZaraCommand}
+                                        disabled={isRefining || !zaraCommand.trim()}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-black text-[10px] h-9"
+                                    >
+                                        {isRefining ? <RefreshCw className="w-3 h-3 animate-spin" /> : "Command"}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
