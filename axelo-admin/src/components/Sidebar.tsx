@@ -182,7 +182,6 @@ export function Sidebar({ isMobileOpen, onMobileClose }: { isMobileOpen?: boolea
           </AnimatePresence>
         </button>
       </div>
-      </div>
     </motion.aside>
     </>
   );
