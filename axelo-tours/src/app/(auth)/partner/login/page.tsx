@@ -149,7 +149,7 @@ function LoginForm() {
           <div className="mt-6 pt-6 border-t border-white/[0.06] text-center space-y-4">
             <p className="text-sm text-gray-500">
               Not a partner yet?{' '}
-              <Link href="/partners" className="text-primary hover:underline font-semibold">Apply here →</Link>
+              <a href="/partners" className="text-primary hover:underline font-semibold">Apply here →</a>
             </p>
             <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
               Forgot your password?{' '}
