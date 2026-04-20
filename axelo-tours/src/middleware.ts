@@ -7,7 +7,10 @@ export async function middleware(request: NextRequest) {
 
   // ── Partner Portal Protection ─────────────────────────────────────────────
   // Allow the login page and public partner landing page to pass through freely
-  if (pathname.startsWith('/partner') && !pathname.startsWith('/partner/login')) {
+  if (
+    (pathname === '/partner' || pathname.startsWith('/partner/')) && 
+    !pathname.startsWith('/partner/login')
+  ) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
