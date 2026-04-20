@@ -249,7 +249,7 @@ export default function AdminDashboard() {
             <PieChart>
               <Pie data={statusCounts} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={8} dataKey="value" stroke="none">
                 {statusCounts.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} cornerRadius={12} />
+                  <Cell key={i} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip 

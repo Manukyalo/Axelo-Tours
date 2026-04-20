@@ -7,7 +7,7 @@ import {
   MessageSquare, Search, Calendar, Zap, CheckCircle2,
   RefreshCw, Activity, ArrowUpRight, ShieldCheck,
   Signal, Headphones, Radio, Mic2, AlertTriangle,
-  ChevronRight, Filter
+  ChevronRight, Filter, Sparkles
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { 

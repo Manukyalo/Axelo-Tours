@@ -7,7 +7,7 @@ import {
   Building2, FileText, Calculator, Upload, ChevronDown,
   ExternalLink, RefreshCw, AlertTriangle, Clock, CheckCircle2,
   DollarSign, TrendingUp, Users, Search, Plus, X, Edit3,
-  Package, Mail, Shield
+  Package, Mail, Shield, MapPin, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
