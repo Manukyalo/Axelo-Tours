@@ -91,49 +91,51 @@ export default function BookingsPage() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
           <p className="text-gray-500 text-sm">{total} total bookings</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/bookings/new">
-            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white rounded-xl">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <Link href="/bookings/new" className="flex-1 sm:flex-none">
+            <Button className="w-full gap-2 bg-primary hover:bg-primary/90 text-white rounded-xl">
               <Plus className="w-4 h-4" /> New Booking
             </Button>
           </Link>
-          <Button onClick={exportCSV} variant="outline" className="gap-2 rounded-xl text-gray-600">
+          <Button onClick={exportCSV} variant="outline" className="flex-1 sm:flex-none gap-2 rounded-xl text-gray-600">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-wrap gap-4 items-center">
-        <div className="relative flex-grow min-w-[200px]">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-center">
+        <div className="relative flex-grow min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search client or booking ID..."
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full pl-9 pr-4 py-2.5 sm:py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
-          <option value="all">All Statuses</option>
-          {["pending","confirmed","completed","cancelled"].map(s => (
-            <option key={s} value={s} className="capitalize">{s}</option>
-          ))}
-        </select>
-        <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
-          <option value="all">All Payments</option>
-          {["unpaid","partial","paid","refunded"].map(s => (
-            <option key={s} value={s} className="capitalize">{s}</option>
-          ))}
-        </select>
+        <div className="flex gap-2">
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="all">All Statuses</option>
+            {["pending","confirmed","completed","cancelled"].map(s => (
+              <option key={s} value={s} className="capitalize">{s}</option>
+            ))}
+          </select>
+          <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="all">All Payments</option>
+            {["unpaid","partial","paid","refunded"].map(s => (
+              <option key={s} value={s} className="capitalize">{s}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Table */}
@@ -201,7 +203,7 @@ export default function BookingsPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
-        <DialogContent className="max-w-lg rounded-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl p-6">
           <DialogHeader>
             <DialogTitle>Booking Details</DialogTitle>
           </DialogHeader>

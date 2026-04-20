@@ -146,28 +146,28 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-500 text-sm mt-0.5">Welcome back — here's what's happening.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/bookings/new" className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-            <Plus className="w-4 h-4" /> Add Booking
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/bookings/new" className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-primary text-white px-4 py-3 sm:py-2 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+            <Plus className="w-4 h-4" /> <span className="whitespace-nowrap">Add Booking</span>
           </Link>
-          <Link href="/packages" className="flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
-            <Plus className="w-4 h-4" /> Add Package
+          <Link href="/packages" className="flex-1 sm:flex-none justify-center flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
+            <Plus className="w-4 h-4" /> <span className="whitespace-nowrap">Add Package</span>
           </Link>
-          <Link href="/bookings" className="flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
+          <Link href="/bookings" className="w-full sm:w-auto justify-center flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
             View All Bookings
           </Link>
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <StatCard label="Total Bookings" value={String(totalBookings)} icon={CalendarCheck} trend="+12%" color="bg-primary" />
         <StatCard label="Revenue This Month" value={formatCurrency(thisMonthKES, "KES")} sub="KES" icon={TrendingUp} trend="+8%" color="bg-emerald-500" />
         <StatCard label="Pending Bookings" value={String(pendingCount)} sub="Requires action" icon={Clock} color="bg-amber-500" />
@@ -175,9 +175,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Line Chart */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden">
           <h2 className="text-base font-bold text-gray-900 mb-6">Revenue — Last 30 Days (KES)</h2>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={revenueData}>

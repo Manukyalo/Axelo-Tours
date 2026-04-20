@@ -181,12 +181,12 @@ export default function PackagesPage() {
   return (
     <div className="p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Packages</h1>
           <p className="text-gray-500 text-sm">{packages.length} safari packages</p>
         </div>
-        <Button onClick={openNew} className="gap-2 bg-primary hover:bg-primary/90">
+        <Button onClick={openNew} className="w-full sm:w-auto gap-2 bg-primary hover:bg-primary/90">
           <Plus className="w-4 h-4" /> New Package
         </Button>
       </div>
@@ -266,12 +266,12 @@ export default function PackagesPage() {
 
       {/* Package Form Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
+        <DialogContent className="max-w-[100vw] sm:max-w-2xl w-full max-h-screen sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl p-6">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Package" : "New Package"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 pt-2">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-6 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Name */}
               <div className="col-span-2">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Name</label>
@@ -377,22 +377,25 @@ export default function PackagesPage() {
             </div>
 
             {/* Available toggle */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
               <button onClick={() => set("available", !form.available)}
-                className={`w-12 h-6 rounded-full relative transition-colors ${form.available ? "bg-primary" : "bg-gray-200"}`}>
+                className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${form.available ? "bg-primary" : "bg-gray-200"}`}>
                 <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.available ? "left-6" : "left-0.5"}`} />
               </button>
-              <span className="text-sm font-medium text-gray-700">Package Available</span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-gray-700">Package Available</span>
+                <span className="text-[10px] text-gray-400">Toggle visibility on the public website</span>
+              </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-3">
-                <Button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 gap-2 rounded-xl px-6 h-11 font-bold">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-6 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 order-2 sm:order-1">
+                <Button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 gap-2 rounded-xl px-8 h-12 font-black shadow-lg shadow-primary/20 transition-all active:scale-95">
                   {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
-                  {editing ? "Save Changes" : "Create Package"}
+                  {editing ? "Save Masterpiece" : "Create Masterpiece"}
                 </Button>
-                <Button variant="outline" onClick={() => setModalOpen(false)} className="rounded-xl px-6 h-11">Cancel</Button>
+                <Button variant="ghost" onClick={() => setModalOpen(false)} className="rounded-xl px-6 h-12 text-gray-400 font-bold">Discard</Button>
               </div>
               {editing && (
                 <Button 
@@ -401,10 +404,10 @@ export default function PackagesPage() {
                     setPackageToDelete(editing.id);
                     setDeleteConfirmOpen(true);
                   }}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 font-bold"
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 font-bold order-1 sm:order-2 h-12"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete Package
+                  <span className="sm:hidden lg:inline">Delete Archive</span>
                 </Button>
               )}
             </div>

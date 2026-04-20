@@ -43,7 +43,7 @@ const NAV_ITEMS = [
   { label: "Settings",    href: "/settings",     icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isMobileOpen, onMobileClose }: { isMobileOpen?: boolean; onMobileClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
@@ -55,11 +55,34 @@ export function Sidebar() {
   };
 
   return (
-    <motion.aside
-      animate={{ width: collapsed ? 72 : 256 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-      className="fixed top-0 left-0 h-full bg-brand-dark border-r border-white/8 flex flex-col z-40 overflow-hidden shadow-2xl"
-    >
+    <>
+      {/* Mobile Backdrop */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onMobileClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: collapsed ? 72 : 256,
+          x: typeof window !== "undefined" && window.innerWidth < 1024 
+            ? (isMobileOpen ? 0 : -256) 
+            : 0 
+        }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        className={cn(
+          "fixed top-0 left-0 h-full bg-brand-dark border-r border-white/8 flex flex-col z-50 overflow-hidden shadow-2xl transition-transform lg:translate-x-0",
+          !isMobileOpen && "-translate-x-full lg:translate-x-0"
+        )}
+      >
       {/* Logo */}
       <div className={cn(
         "flex items-center h-16 px-4 border-b border-white/8 shrink-0",
@@ -159,6 +182,8 @@ export function Sidebar() {
           </AnimatePresence>
         </button>
       </div>
+      </div>
     </motion.aside>
+    </>
   );
 }
