@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -14,7 +14,9 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const errorParam = searchParams.get('error');
   const ERROR_MESSAGES: Record<string, string> = {
@@ -27,6 +29,7 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMsg('');
 
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -38,7 +41,31 @@ function LoginForm() {
       return;
     }
 
-    router.push('/partner');
+    // Force full reload to reset Next.js client-side router cache
+    window.location.href = '/partner';
+  };
+
+  const handleResetPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your business email first to reset your password.');
+      return;
+    }
+
+    setResetLoading(true);
+    setError('');
+    setSuccessMsg('');
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/partner/reset-password`,
+    });
+
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setSuccessMsg('Password reset link sent to your email.');
+    }
+    setResetLoading(false);
   };
 
   return (
@@ -98,10 +125,17 @@ function LoginForm() {
                 {error}
               </div>
             )}
+            
+            {successMsg && (
+              <div className="flex items-center gap-2 bg-green-500/10 border border-green-400/20 rounded-xl px-4 py-3 text-sm text-green-300">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                {successMsg}
+              </div>
+            )}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || resetLoading}
               className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 mt-2"
             >
               {loading ? (
@@ -112,14 +146,20 @@ function LoginForm() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-white/[0.06] text-center space-y-3">
+          <div className="mt-6 pt-6 border-t border-white/[0.06] text-center space-y-4">
             <p className="text-sm text-gray-500">
               Not a partner yet?{' '}
               <Link href="/partners" className="text-primary hover:underline font-semibold">Apply here →</Link>
             </p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
               Forgot your password?{' '}
-              <a href="mailto:support@axelotours.co.ke" className="hover:text-gray-400 transition-colors">Contact support</a>
+              <button 
+                onClick={handleResetPassword}
+                disabled={resetLoading}
+                className="hover:text-primary transition-colors disabled:opacity-50"
+              >
+                {resetLoading ? 'Sending...' : 'Reset it here'}
+              </button>
             </p>
           </div>
         </div>
