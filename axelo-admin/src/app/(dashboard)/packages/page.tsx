@@ -399,28 +399,28 @@ export default function PackagesPage() {
       </div>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-[40px]">
+        <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden bg-gray-50 border-0 shadow-2xl rounded-[32px]">
             <div className="flex flex-col h-full">
                 {/* Elite Header */}
-                <div className="px-12 py-10 bg-gray-900 flex items-center justify-between">
+                <div className="px-12 py-8 bg-brand-dark flex items-center justify-between shadow-md z-10">
                     <div>
                         <div className="flex items-center gap-3 text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-2">
                             <Zap className="w-3.5 h-3.5 fill-current" />
                             Asset Provisioning Terminal
                         </div>
-                        <h2 className="text-3xl font-black text-white tracking-tighter">
-                            {editing ? "Edit_Master_Asset" : "Provision_New_Asset"}
+                        <h2 className="text-3xl font-black text-white tracking-tight">
+                            {editing ? "Edit Master Asset" : "Provision New Asset"}
                         </h2>
                     </div>
                     <div className="flex items-center gap-4">
-                         <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/10">
-                            <p className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Status</p>
+                         <div className="px-4 py-2 bg-white/10 rounded-xl border border-white/20 backdrop-blur-sm">
+                            <p className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Status</p>
                             <p className="text-xs font-black text-emerald-400 tracking-widest leading-none uppercase">{form.available ? "LIVE_NODE" : "DRAFT_NODE"}</p>
                          </div>
                          <Button 
                             onClick={save} 
                             disabled={saving}
-                            className="h-14 px-10 bg-white hover:bg-gray-100 text-gray-900 font-black uppercase tracking-[0.2em] text-xs rounded-2xl transition-all shadow-xl"
+                            className="h-14 px-8 bg-primary hover:bg-primary/90 text-white font-bold tracking-widest text-[11px] rounded-2xl transition-all shadow-xl shadow-primary/30 uppercase"
                         >
                             {saving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             Execute Commit
@@ -428,79 +428,81 @@ export default function PackagesPage() {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-16">
+                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-12">
                     {/* Identity Matrix */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        <div className="lg:col-span-2 space-y-10">
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary ml-1 block">Asset Identity</label>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div className="lg:col-span-2 space-y-8 bg-white p-8 rounded-[2rem] border border-gray-200 shadow-sm">
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1 block">Asset Identity</label>
                                 <input 
-                                    className="w-full bg-white border border-gray-100 p-8 rounded-[2rem] focus:ring-4 focus:ring-primary/10 transition-all text-3xl font-black text-gray-900 placeholder:text-gray-200 outline-none shadow-sm"
+                                    className="w-full bg-gray-50 border border-gray-200 p-6 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-2xl font-black text-gray-900 placeholder:text-gray-300 outline-none shadow-inner"
                                     value={form.name}
                                     onChange={e => set("name", e.target.value)}
                                     placeholder="Enter destination name..."
                                 />
-                                {errors.name && <p className="text-red-500 text-[10px] font-black uppercase mt-2 ml-4">{errors.name}</p>}
+                                {errors.name && <p className="text-red-500 text-[10px] font-bold uppercase mt-1 ml-2">{errors.name}</p>}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-10">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1 block">Locus / Target Region</label>
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1 block">Locus / Target Region</label>
                                     <div className="relative group">
-                                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
+                                        <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                                         <input 
-                                            className="w-full bg-gray-50/50 border border-gray-100 pl-16 pr-8 py-5 rounded-2xl focus:ring-4 focus:ring-primary/10 bg-white transition-all font-black text-gray-700 outline-none"
+                                            className="w-full bg-gray-50 border border-gray-200 pl-14 pr-6 py-4 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-bold text-gray-800 outline-none shadow-inner placeholder:text-gray-300"
                                             value={form.destination}
                                             onChange={e => set("destination", e.target.value)}
                                             placeholder="e.g. Serengeti, Mara..."
                                         />
                                     </div>
-                                    {errors.destination && <p className="text-red-500 text-[9px] font-black uppercase mt-1 ml-1">{errors.destination}</p>}
+                                    {errors.destination && <p className="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{errors.destination}</p>}
                                 </div>
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1 block">System Slug Node</label>
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1 block">System Slug Node</label>
                                     <div className="relative group">
-                                        <Globe className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
+                                        <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                                         <input 
-                                            className="w-full border border-gray-100 pl-16 pr-8 py-5 rounded-2xl focus:ring-4 focus:ring-primary/10 bg-white transition-all font-mono text-xs text-gray-400"
+                                            className="w-full bg-gray-50 border border-gray-200 pl-14 pr-6 py-4 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-mono text-sm text-gray-600 outline-none shadow-inner placeholder:text-gray-300"
                                             value={form.slug}
                                             onChange={e => set("slug", e.target.value)}
+                                            placeholder="maasai-mara-safari"
                                         />
                                     </div>
-                                    {errors.slug && <p className="text-red-500 text-[9px] font-black uppercase mt-1 ml-1">{errors.slug}</p>}
+                                    {errors.slug && <p className="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{errors.slug}</p>}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-8 bg-gray-50/50 p-10 rounded-[3rem] border border-gray-100 shadow-inner self-start">
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary block">Ledger Value (USD)</label>
-                                <div className="relative group">
-                                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-500 group-focus-within:text-primary transition-colors" />
+                        <div className="space-y-8 bg-white p-8 rounded-[2rem] border border-gray-200 shadow-sm self-start">
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-bold uppercase tracking-widest text-primary block">Ledger Value (USD)</label>
+                                <div className="relative group shadow-inner rounded-2xl bg-gray-50 border border-gray-200 overflow-hidden focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all">
+                                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-7 h-7 text-emerald-500 transition-colors" />
                                     <input 
                                         type="number"
-                                        className="w-full bg-white border border-gray-100 pl-16 pr-8 py-6 rounded-[2rem] focus:ring-4 focus:ring-primary/10 transition-all font-black text-3xl text-gray-900 outline-none shadow-sm"
+                                        className="w-full bg-transparent pl-16 pr-8 py-6 text-3xl font-black text-gray-900 outline-none placeholder:text-gray-300"
                                         value={form.price_usd}
                                         onChange={e => set("price_usd", Number(e.target.value))}
+                                        placeholder="0"
                                     />
                                 </div>
-                                {errors.price_usd && <p className="text-red-500 text-[10px] font-black uppercase mt-1 ml-2">{errors.price_usd}</p>}
-                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest text-right pr-2">REF KES: {formatCurrency(form.price_kes, "KES")}</p>
+                                {errors.price_usd && <p className="text-red-500 text-[10px] font-bold uppercase mt-1 ml-2">{errors.price_usd}</p>}
+                                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest text-right pr-2">REF KES: {formatCurrency(form.price_kes, "KES")}</p>
                             </div>
 
-                            <div className="pt-8 border-t border-gray-100 grid grid-cols-2 gap-6">
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-gray-400 font-black uppercase tracking-widest text-[9px]"><Clock className="w-3.5 h-3.5" /> Duration</div>
-                                    <div className="relative">
-                                        <input type="number" value={form.duration_days} onChange={e => set("duration_days", Number(e.target.value))} className="w-full bg-white border border-gray-100 p-4 rounded-xl text-gray-900 text-lg font-black outline-none focus:ring-2 focus:ring-primary/10 transition-all pr-12" />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300">DAYS</span>
+                            <div className="pt-6 border-t border-gray-100 grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-gray-500 font-bold uppercase tracking-widest text-[10px]"><Clock className="w-3.5 h-3.5" /> Duration</div>
+                                    <div className="relative rounded-xl border border-gray-200 bg-gray-50 shadow-inner focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center">
+                                        <input type="number" value={form.duration_days} onChange={e => set("duration_days", Number(e.target.value))} className="w-full bg-transparent p-4 text-gray-900 text-xl font-black outline-none" placeholder="0" />
+                                        <span className="pr-4 text-[10px] font-black text-gray-400 select-none">DAYS</span>
                                     </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-gray-400 font-black uppercase tracking-widest text-[9px]"><Users className="w-3.5 h-3.5" /> Max Group</div>
-                                    <div className="relative">
-                                        <input type="number" value={form.group_size_max} onChange={e => set("group_size_max", Number(e.target.value))} className="w-full bg-white border border-gray-100 p-4 rounded-xl text-gray-900 text-lg font-black outline-none focus:ring-2 focus:ring-primary/10 transition-all pr-12" />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300">PAX</span>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-gray-500 font-bold uppercase tracking-widest text-[10px]"><Users className="w-3.5 h-3.5" /> Max Group</div>
+                                    <div className="relative rounded-xl border border-gray-200 bg-gray-50 shadow-inner focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center">
+                                        <input type="number" value={form.group_size_max} onChange={e => set("group_size_max", Number(e.target.value))} className="w-full bg-transparent p-4 text-gray-900 text-xl font-black outline-none" placeholder="0" />
+                                        <span className="pr-4 text-[10px] font-black text-gray-400 select-none">PAX</span>
                                     </div>
                                 </div>
                             </div>

@@ -113,11 +113,11 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center h-11 rounded-xl px-3.5 transition-all duration-200 group relative",
                       isActive
-                        ? "bg-primary text-white shadow-xl shadow-primary/30"
-                        : "text-white/40 hover:text-white hover:bg-white/5"
+                        ? "bg-white text-brand-dark shadow-[0_4px_20px_-4px_rgba(255,255,255,0.4)]"
+                        : "text-white/60 hover:text-white hover:bg-white/10"
                     )}
                   >
-                    <Icon className="w-5 h-5 shrink-0" />
+                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-brand-dark" : "text-white/60 group-hover:text-white")} />
                     {!collapsed && (
                       <span className="ml-3.5 text-sm font-semibold tracking-tight whitespace-nowrap">
                         {label}
@@ -150,11 +150,11 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center h-11 rounded-xl px-3.5 transition-all duration-200 group relative",
                       isActive
-                        ? "bg-primary text-white shadow-xl shadow-primary/30"
-                        : "text-white/40 hover:text-white hover:bg-white/5"
+                        ? "bg-white text-brand-dark shadow-[0_4px_20px_-4px_rgba(255,255,255,0.4)]"
+                        : "text-white/60 hover:text-white hover:bg-white/10"
                     )}
                   >
-                    <Icon className="w-5 h-5 shrink-0" />
+                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-brand-dark" : "text-white/60 group-hover:text-white")} />
                     {!collapsed && (
                       <span className="ml-3.5 text-sm font-semibold tracking-tight whitespace-nowrap">
                         {label}
