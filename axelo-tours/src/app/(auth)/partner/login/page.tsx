@@ -31,12 +31,39 @@ function LoginForm() {
     setError('');
     setSuccessMsg('');
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (authError) {
       setError(authError.message === 'Invalid login credentials'
         ? 'Incorrect email or password. Please try again.'
         : authError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Check partner status
+    const { data: partner, error: partnerError } = await supabase
+      .from('partners')
+      .select('status')
+      .eq('email', email)
+      .single();
+
+    if (partnerError || !partner) {
+      await supabase.auth.signOut();
+      setError('No partner account found for this email. Please apply at /partners.');
+      setLoading(false);
+      return;
+    }
+
+    if (partner.status !== 'approved') {
+      await supabase.auth.signOut();
+      if (partner.status === 'pending') {
+        setError('Your application is pending review. We\'ll email you once activated.');
+      } else if (partner.status === 'rejected') {
+        setError('Your partner application was not approved. Contact partnerships@axelotours.co.ke.');
+      } else if (partner.status === 'suspended') {
+        setError('Your partner account has been suspended. Please contact support.');
+      }
       setLoading(false);
       return;
     }

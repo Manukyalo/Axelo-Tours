@@ -111,11 +111,11 @@ export default function PartnersPage() {
 
     const { error: dbError } = await supabase.from('partners').insert({
       company_name: formData.company_name,
-      company_type: formData.company_type,
+      partner_type: formData.company_type,
       country: formData.country,
       annual_pax: formData.annual_pax ? parseInt(formData.annual_pax) : null,
       contact_name: formData.contact_name,
-      contact_email: formData.contact_email,
+      email: formData.contact_email,
       phone: formData.phone || null,
       website: formData.website || null,
       status: 'pending',

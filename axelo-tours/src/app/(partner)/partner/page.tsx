@@ -9,8 +9,8 @@ export default async function PartnerDashboardPage() {
 
   const { data: partner } = await supabase
     .from('partners')
-    .select('id, company_name, tier, net_rate_discount_pct, api_key, company_type, created_at')
-    .eq('contact_email', user.email)
+    .select('id, company_name, tier, net_rate_discount_pct, api_key, partner_type, created_at, phone, country')
+    .eq('email', user.email)
     .single();
 
   if (!partner) redirect('/partner/login');
@@ -43,11 +43,22 @@ export default async function PartnerDashboardPage() {
   return (
     <div className="p-8 text-white">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold mb-1">
-          Welcome back, <span className="text-accent">{partner.company_name}</span>
-        </h1>
-        <p className="text-gray-400">Your partner dashboard — manage quotes, catalog, and excursions.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div>
+          <h1 className="font-display text-4xl font-black mb-2 tracking-tight">
+            Welcome back, <span className="text-primary italic">{partner.company_name}</span>
+          </h1>
+          <p className="text-gray-400 font-medium">B2B Enterprise Portal • Exclusive Safari Inventory</p>
+        </div>
+        <div className="flex items-center gap-4 bg-white/5 border border-white/10 p-3 rounded-2xl">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/20">
+            {partner.company_name.charAt(0)}
+          </div>
+          <div className="text-right pr-2">
+            <div className="text-xs font-black uppercase text-gray-500 tracking-wider">Account Tier</div>
+            <div className="text-sm font-bold text-white uppercase tracking-tight">{partner.tier} Member</div>
+          </div>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -93,41 +104,75 @@ export default async function PartnerDashboardPage() {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <a
-          href="/partner/quote-builder"
-          className="group bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 rounded-2xl p-6 transition-all duration-300"
-        >
-          <div className="text-2xl mb-3">✨</div>
-          <h3 className="font-display font-bold text-lg mb-1">Build Group Quote</h3>
-          <p className="text-sm text-gray-400">5-step wizard → PDF in minutes</p>
-          <div className="mt-4 text-primary text-sm font-semibold group-hover:translate-x-1 transition-transform">
-            Start building →
+      <div className="grid lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2 grid md:grid-cols-3 gap-4">
+          <a
+            href="/partner/quote-builder"
+            className="group relative overflow-hidden bg-primary shadow-2xl shadow-primary/10 rounded-3xl p-6 transition-all duration-500 hover:-translate-y-1"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl -mr-16 -mt-16" />
+            <div className="text-3xl mb-4">🪄</div>
+            <h3 className="font-display font-black text-xl mb-1 text-white">Quote Builder</h3>
+            <p className="text-xs text-white/70 font-medium leading-relaxed">Turn requests into custom itineraries in under 5 minutes.</p>
+            <div className="mt-6 flex items-center gap-2 text-white text-xs font-black uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+              Start Builder ↵
+            </div>
+          </a>
+          <a
+            href="/partner/catalog"
+            className="group bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-3xl p-6 transition-all duration-300"
+          >
+            <div className="text-2xl mb-4">🦁</div>
+            <h3 className="font-display font-bold text-lg mb-1">Safari Catalog</h3>
+            <p className="text-xs text-gray-500 font-medium">B2B inventory with live net-rate discounts.</p>
+            <div className="mt-8 text-gray-400 text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-all">
+              View Packages →
+            </div>
+          </a>
+          <a
+            href="/partner/shore-excursions"
+            className="group bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-3xl p-6 transition-all duration-300"
+          >
+            <div className="text-2xl mb-4">⚓</div>
+            <h3 className="font-display font-bold text-lg mb-1">Excursions</h3>
+            <p className="text-xs text-gray-500 font-medium">Day trips & transfers for cruise & hotel guests.</p>
+            <div className="mt-8 text-gray-400 text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-all">
+              Excursion Desk →
+            </div>
+          </a>
+        </div>
+
+        <div className="bg-gradient-to-br from-gray-900 to-[#080d08] border border-white/10 rounded-3xl p-6">
+          <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4">Net Rate Calculator</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-400">Your Base Rate</span>
+              <span className="font-mono text-emerald-400 font-bold">-{partner.net_rate_discount_pct}%</span>
+            </div>
+            <div className="relative">
+              <label className="text-[10px] font-bold text-gray-500 uppercase mb-1.5 block">Estimated Selling Price (USD)</label>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 font-bold">$</span>
+                <input 
+                  type="number" 
+                  placeholder="2,500" 
+                  className="bg-transparent text-xl font-display font-black text-white focus:outline-none w-full"
+                  defaultValue={2500}
+                />
+              </div>
+            </div>
+            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase">Your Net Cost</div>
+                <div className="text-xl font-display font-black text-emerald-400">$2,250</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] font-bold text-gray-500 uppercase">Booking Margin</div>
+                <div className="text-xl font-display font-black text-white">$250</div>
+              </div>
+            </div>
           </div>
-        </a>
-        <a
-          href="/partner/catalog"
-          className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-white/20 rounded-2xl p-6 transition-all duration-300"
-        >
-          <div className="text-2xl mb-3">📦</div>
-          <h3 className="font-display font-bold text-lg mb-1">Browse Catalog</h3>
-          <p className="text-sm text-gray-400">All packages with your net rates</p>
-          <div className="mt-4 text-gray-400 text-sm font-semibold group-hover:text-white group-hover:translate-x-1 transition-all">
-            View catalog →
-          </div>
-        </a>
-        <a
-          href="/partner/shore-excursions"
-          className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-white/20 rounded-2xl p-6 transition-all duration-300"
-        >
-          <div className="text-2xl mb-3">🚢</div>
-          <h3 className="font-display font-bold text-lg mb-1">Shore Excursions</h3>
-          <p className="text-sm text-gray-400">Mombasa &amp; Zanzibar packages</p>
-          <div className="mt-4 text-gray-400 text-sm font-semibold group-hover:text-white group-hover:translate-x-1 transition-all">
-            View excursions →
-          </div>
-        </a>
+        </div>
       </div>
 
       {/* Recent Quotes */}

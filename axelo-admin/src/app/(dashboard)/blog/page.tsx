@@ -281,8 +281,12 @@ export default function BlogList() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button onClick={() => setEditingPost(null)} variant="ghost" className="rounded-xl">Cancel</Button>
-                    <Button onClick={savePost} disabled={isSaving} className="rounded-xl bg-gray-900 hover:bg-gray-800 text-white min-w-[120px] font-bold gap-2">
+                    <div className="flex items-center gap-2 mr-4 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
+                        <span className={`w-2 h-2 rounded-full ${editingPost?.published ? "bg-green-500 animate-pulse" : "bg-amber-500"}`} />
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{editingPost?.published ? "Live" : "Draft Mode"}</span>
+                    </div>
+                    <Button onClick={() => setEditingPost(null)} variant="ghost" className="rounded-xl font-medium">Cancel</Button>
+                    <Button onClick={savePost} disabled={isSaving} className="rounded-xl bg-primary hover:bg-primary/90 text-white min-w-[120px] font-bold gap-2 shadow-lg shadow-primary/20">
                         {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         {isSaving ? "Saving..." : "Save Article"}
                     </Button>
@@ -292,51 +296,77 @@ export default function BlogList() {
             <div className="flex-1 overflow-hidden flex bg-gray-50">
                 {/* Editor Side */}
                 {(viewMode === "edit" || viewMode === "split") && (
-                    <div className={`${viewMode === "split" ? "w-1/2" : "w-full"} h-full overflow-y-auto p-6 space-y-6 border-r border-gray-100 bg-white`}>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">Article Title</label>
-                                <input 
-                                    className="w-full h-12 px-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all font-bold text-lg"
-                                    value={editorContent.title}
-                                    onChange={e => setEditorContent({...editorContent, title: e.target.value})}
-                                    placeholder="Enter title..."
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">URL Slug</label>
-                                    <input 
-                                        className="w-full h-11 px-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all text-sm font-mono"
-                                        value={editorContent.slug}
-                                        onChange={e => setEditorContent({...editorContent, slug: e.target.value})}
-                                    />
+                    <div className={`${viewMode === "split" ? "w-1/2" : "w-full"} h-full overflow-y-auto bg-white`}>
+                        <div className="max-w-4xl mx-auto p-8 space-y-8">
+                            <div className="grid grid-cols-1 gap-8">
+                                {/* Main Content Section */}
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 block">Article Title</label>
+                                        <input 
+                                            className="w-full h-14 px-6 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all font-black text-2xl placeholder:text-gray-300"
+                                            value={editorContent.title}
+                                            onChange={e => setEditorContent({...editorContent, title: e.target.value})}
+                                            placeholder="Enter a catchy title..."
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-primary block font-mono">HTML Body Content</label>
+                                            <span className="text-[10px] text-gray-400 font-mono">Supports standard HTML tags</span>
+                                        </div>
+                                        <textarea 
+                                            className="w-full min-h-[550px] p-6 rounded-2xl border border-gray-100 bg-slate-900 text-slate-300 font-mono text-sm focus:ring-8 focus:ring-primary/5 transition-all resize-none leading-relaxed shadow-inner"
+                                            value={editorContent.content_html}
+                                            onChange={e => setEditorContent({...editorContent, content_html: e.target.value})}
+                                            placeholder="<p>Start writing your masterpiece...</p>"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">Read Time (Mins)</label>
-                                    <input 
-                                        type="number"
-                                        className="w-full h-11 px-4 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all text-sm"
-                                        value={editorContent.read_time_minutes}
-                                        onChange={e => setEditorContent({...editorContent, read_time_minutes: parseInt(e.target.value)})}
-                                    />
+
+                                {/* Sidebar / Settings Section (Only shown in full Edit mode or at the bottom) */}
+                                <div className={`grid ${viewMode === "edit" ? "grid-cols-3" : "grid-cols-1"} gap-6 pt-8 border-t border-gray-50`}>
+                                    <div className="space-y-4">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">SEO Settings</h3>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-gray-400 mb-1.5 block">URL Slug</label>
+                                            <div className="flex items-center bg-gray-50 rounded-xl px-3 border border-gray-100">
+                                                <span className="text-gray-300 text-xs mr-1 font-mono">/blog/</span>
+                                                <input 
+                                                    className="flex-1 bg-transparent py-2.5 text-xs font-mono focus:outline-none"
+                                                    value={editorContent.slug}
+                                                    onChange={e => setEditorContent({...editorContent, slug: e.target.value})}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-gray-400 mb-1.5 block">Read Time</label>
+                                            <div className="flex items-center bg-gray-50 rounded-xl px-3 border border-gray-100">
+                                                <input 
+                                                    type="number"
+                                                    className="w-full bg-transparent py-2.5 text-xs focus:outline-none"
+                                                    value={editorContent.read_time_minutes}
+                                                    onChange={e => setEditorContent({...editorContent, read_time_minutes: parseInt(e.target.value)})}
+                                                />
+                                                <span className="text-gray-400 text-[10px] font-bold uppercase ml-2">Mins</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className={`${viewMode === "edit" ? "col-span-2" : ""} space-y-4`}>
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Search Presence</h3>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-gray-400 mb-1.5 block">Meta Description (160 chars max)</label>
+                                            <textarea 
+                                                className="w-full h-[88px] px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all text-xs resize-none leading-normal"
+                                                value={editorContent.meta_description}
+                                                onChange={e => setEditorContent({...editorContent, meta_description: e.target.value})}
+                                                placeholder="Write a compelling summary for search results..."
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">Meta Description (SEO)</label>
-                                <textarea 
-                                    className="w-full h-20 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all text-sm resize-none"
-                                    value={editorContent.meta_description}
-                                    onChange={e => setEditorContent({...editorContent, meta_description: e.target.value})}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block font-mono">HTML Content</label>
-                                <textarea 
-                                    className="w-full h-[400px] p-4 rounded-xl border border-gray-100 bg-slate-900 text-slate-300 font-mono text-sm focus:ring-4 focus:ring-primary/10 transition-all resize-none leading-relaxed"
-                                    value={editorContent.content_html}
-                                    onChange={e => setEditorContent({...editorContent, content_html: e.target.value})}
-                                />
                             </div>
                         </div>
                     </div>

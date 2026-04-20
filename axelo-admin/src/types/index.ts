@@ -123,29 +123,41 @@ export interface Voucher {
 
 export interface Partner {
   id: string;
-  user_id: string;
   company_name: string;
-  company_type: 'travel_agency' | 'cruise_line' | 'charter_airline' | 'wholesaler' | 'ota';
-  country: string;
   contact_name: string;
-  contact_email: string;
-  status: 'pending' | 'active' | 'suspended';
-  tier: 'standard' | 'premium' | 'preferred';
-  net_rate_discount_pct: number;
-  api_key: string;
+  email: string;
+  website?: string;
+  phone?: string;
+  country?: string;
+  annual_pax?: number;
+  partner_type: 'travel_agency' | 'cruise_line' | 'charter_airline' | 'wholesaler' | 'ota' | 'hotel' | 'other';
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  tier: 'silver' | 'gold' | 'platinum';
+  api_key?: string;
   created_at: string;
 }
 
 export interface GroupQuote {
   id: string;
-  agency_id: string;
+  partner_id: string;
+  quote_ref: string;
   destination: string;
   travel_date: string;
-  group_size: number;
-  budget_per_person_usd: number;
-  status: 'draft' | 'sent' | 'accepted' | 'declined';
-  quote_details: any;
+  return_date?: string;
+  pax_count: number;
+  accommodation_requests: any[];
+  activities: any[];
+  transport_included: boolean;
+  total_net_usd?: number;
+  total_sell_usd?: number;
+  margin_usd?: number;
+  margin_pct?: number;
+  notes?: string;
+  line_items?: any[];
+  valid_until?: string;
+  status: 'draft' | 'submitted' | 'pending' | 'sent' | 'accepted' | 'declined' | 'expired';
   created_at: string;
+  partner?: Partner;
 }
 
 export interface CallLog {

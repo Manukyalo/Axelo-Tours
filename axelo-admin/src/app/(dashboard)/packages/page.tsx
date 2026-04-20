@@ -3,12 +3,22 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, X, Upload, RefreshCw } from "lucide-react";
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, X, Upload, RefreshCw, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { SafariPackage } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 
 const USD_KES = 130;
 
@@ -67,6 +77,8 @@ export default function PackagesPage() {
   const [form, setForm] = useState<FormData>(empty);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState<string | null>(null);
 
   const fetchPackages = useCallback(async () => {
     setLoading(true);
@@ -149,7 +161,7 @@ export default function PackagesPage() {
   };
 
   const deletePackage = async (id: string) => {
-    if (!confirm("Delete this package?")) return;
+    setDeleteConfirmOpen(false);
     const { error } = await supabase.from("packages").delete().eq("id", id);
     if (error) {
       alert("Cannot delete package. It may be linked to existing bookings or cost sheets.");
@@ -224,11 +236,19 @@ export default function PackagesPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(pkg)} className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors">
+                      <button onClick={() => openEdit(pkg)} className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors flex items-center gap-2 font-medium">
                         <Edit2 className="w-4 h-4" />
+                        <span className="hidden lg:inline text-xs">Edit</span>
                       </button>
-                      <button onClick={() => deletePackage(pkg.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors">
+                      <button 
+                        onClick={() => {
+                          setPackageToDelete(pkg.id);
+                          setDeleteConfirmOpen(true);
+                        }} 
+                        className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors flex items-center gap-2 font-medium"
+                      >
                         <Trash2 className="w-4 h-4" />
+                        <span className="hidden lg:inline text-xs">Delete</span>
                       </button>
                     </div>
                   </td>
@@ -361,16 +381,56 @@ export default function PackagesPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-              <Button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 gap-2">
-                {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
-                {editing ? "Save Changes" : "Create Package"}
-              </Button>
-              <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-3">
+                <Button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 gap-2 rounded-xl px-6 h-11 font-bold">
+                  {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
+                  {editing ? "Save Changes" : "Create Package"}
+                </Button>
+                <Button variant="outline" onClick={() => setModalOpen(false)} className="rounded-xl px-6 h-11">Cancel</Button>
+              </div>
+              {editing && (
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setPackageToDelete(editing.id);
+                    setDeleteConfirmOpen(true);
+                  }}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 font-bold"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Package
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="rounded-3xl border-0 shadow-2xl">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-500">
+              This will permanently delete the package <span className="font-bold text-gray-900">"{packages.find(p => p.id === packageToDelete)?.name}"</span>. 
+              This action cannot be undone and will remove it from all public sections of the website.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 mt-6">
+            <AlertDialogCancel className="rounded-xl border-gray-200">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => packageToDelete && deletePackage(packageToDelete)}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 font-bold"
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
