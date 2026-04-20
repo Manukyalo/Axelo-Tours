@@ -39,6 +39,7 @@ export interface Client {
 
 export interface Booking {
   id: string;
+  booking_ref: string;
   client_id: string;
   package_id: string;
   travel_date: string;

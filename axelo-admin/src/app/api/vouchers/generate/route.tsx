@@ -99,9 +99,9 @@ export async function POST(req: Request) {
     const pdfStream = await renderToStream(<VoucherDocument data={data} />);
     
     // Convert stream to Buffer
-    const chunks = [];
-    for await (const chunk of pdfStream) {
-      chunks.push(chunk);
+    const chunks: Buffer[] = [];
+    for await (const chunk of pdfStream as any) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as any));
     }
     const pdfBuffer = Buffer.concat(chunks);
 

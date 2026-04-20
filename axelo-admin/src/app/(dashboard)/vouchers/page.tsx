@@ -6,7 +6,7 @@ import {
   FileText, Search, Send, FileOutput, CheckCircle2, 
   AlertTriangle, Eye, Plus, Calendar, User, MapPin,
   X, Building, Loader2, Info, Activity, RefreshCw,
-  FileCircleControl, ChevronDown
+  FileCheck, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -212,7 +212,7 @@ export default function VouchersPage() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-primary/20">
-              <FileCircleControl className="w-3.5 h-3.5" />
+              <FileCheck className="w-3.5 h-3.5" />
               Logistics Control
             </div>
             <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
@@ -361,11 +361,14 @@ export default function VouchersPage() {
           </table>
         </div>
       </div>
+      </div>
 
-      {/* Creation Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm overflow-hidden">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             className="bg-white rounded-[40px] w-full max-w-2xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100"
           >
             <div className="p-10 border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">

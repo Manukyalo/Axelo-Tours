@@ -6,13 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, 
   X, Upload, RefreshCw, AlertTriangle, FileText, ChevronRight,
-  Globe, Clock, DollarSign, Users, Award, MapPin, Zap, Save, ImagePlus
+  Globe, Clock, DollarSign, Users, Award, MapPin, Zap, Save, ImagePlus,
+  Database, Activity, Sparkles
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { SafariPackage } from "@/types";
 import { z } from "zod";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { 
   Dialog, 
   DialogContent, 
@@ -83,18 +84,6 @@ function ArrayField({ label, items, onChange }: { label: string; items: string[]
 
 export default function PackagesPage() {
   const supabase = createClient();
-  const [packages, setPackages] = useState<SafariPackage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<SafariPackage | null>(null);
-  const [form, setForm] = useState<FormData>(empty);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [packageToDelete, setPackageToDelete] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
   const empty: FormData = {
     name: "", slug: "", destination: "", duration_days: 3,
     price_usd: 0, price_kes: 0, category: "luxury", difficulty: "easy",
@@ -102,6 +91,18 @@ export default function PackagesPage() {
     highlights: [""], inclusions: [""], exclusions: [""],
     best_season: [], available: true, images: [],
   };
+
+  const [packages, setPackages] = useState<SafariPackage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<SafariPackage | null>(null);
+  const [form, setForm] = useState<FormData>(empty);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState<string | null>(null);
 
   const fetchPackages = useCallback(async () => {
     setLoading(true);
@@ -181,7 +182,7 @@ export default function PackagesPage() {
     const validation = PackageSchema.safeParse(payload);
     if (!validation.success) {
       const fieldErrors: Record<string, string> = {};
-      validation.error.errors.forEach(err => {
+      validation.error.issues.forEach((err: z.ZodIssue) => {
         if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
       });
       setErrors(fieldErrors);
@@ -225,6 +226,7 @@ export default function PackagesPage() {
     !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.destination.toLowerCase().includes(search.toLowerCase())
   );
 
+  return (
     <div className="p-8 space-y-10 bg-[#fafafa] min-h-screen">
       {/* Tactical Asset Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
@@ -439,7 +441,6 @@ export default function PackagesPage() {
                                     placeholder="Enter destination name..."
                                 />
                                 {errors.name && <p className="text-red-500 text-[10px] font-black uppercase mt-2 ml-4">{errors.name}</p>}
-                            </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-10">

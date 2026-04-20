@@ -9,7 +9,7 @@ import {
   X, CheckCircle, XCircle, RefreshCw, Plus, Trash2, 
   Clock, Users, MapPin, DollarSign, Award, AlertTriangle, Activity,
   Shield, Zap, Globe, Briefcase, ChevronDown, MoreHorizontal,
-  FileSearch, UserCheck, CreditCard, Calendar
+  FileSearch, UserCheck, CreditCard, Calendar, Loader2
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
@@ -507,21 +507,3 @@ export default function BookingsPage() {
   );
 }
 
-function Loader2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
