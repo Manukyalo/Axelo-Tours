@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
     Mail, 
     MessageSquare, 
@@ -9,12 +10,52 @@ import {
     Send, 
     Sparkles, 
     Headphones,
-    Clock
+    CheckCircle2,
+    Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+type FormState = {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+};
+
 export default function ContactPage() {
+  const [form, setForm] = useState<FormState>({ name: "", email: "", subject: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrorMsg("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.message) {
+      setErrorMsg("Please fill in your name, email, and message.");
+      return;
+    }
+
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Failed to send");
+      setStatus("success");
+    } catch (err: any) {
+      setErrorMsg(err.message || "Something went wrong. Please try again.");
+      setStatus("error");
+    }
+  };
+
   return (
     <main className="min-h-screen pt-40 pb-32 bg-[#FAFAF7]">
         <div className="container mx-auto px-6">
@@ -26,7 +67,7 @@ export default function ContactPage() {
                         <span>Get In Touch</span>
                     </div>
                     <h1 className="font-display text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight">
-                        We're Here for the <span className="text-primary italic">Journey</span>.
+                        We&apos;re Here for the <span className="text-primary italic">Journey</span>.
                     </h1>
                     <p className="text-muted-foreground text-lg font-medium leading-relaxed mb-12">
                         Have questions about park fees, custom itineraries, or seasonal migrations? Our team and AI agents are available 24/7.
@@ -39,7 +80,7 @@ export default function ContactPage() {
                             </div>
                             <div>
                                 <h4 className="font-bold text-lg mb-1">Email Support</h4>
-                                <p className="text-muted-foreground text-sm font-medium">concierge@axelo-tours.com</p>
+                                <p className="text-muted-foreground text-sm font-medium">concierge@axelotours.co.ke</p>
                                 <p className="text-xs text-primary font-bold mt-2 uppercase tracking-widest">Average reply: 2 hours</p>
                             </div>
                         </div>
@@ -96,36 +137,113 @@ export default function ContactPage() {
                         className="bg-white p-10 md:p-12 rounded-[3rem] border border-border/40 shadow-2xl shadow-primary/5"
                     >
                         <h2 className="text-3xl font-bold mb-8">Send a Message</h2>
-                        <form className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Full Name</label>
-                                    <Input placeholder="John Doe" className="h-14 rounded-2xl bg-gray-50 border-none px-6" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Email Address</label>
-                                    <Input placeholder="john@example.com" className="h-14 rounded-2xl bg-gray-50 border-none px-6" />
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Subject</label>
-                                <Input placeholder="Custom Safari Inquiry" className="h-14 rounded-2xl bg-gray-50 border-none px-6" />
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Message</label>
-                                <textarea 
-                                    className="w-full min-h-[200px] rounded-[2rem] bg-gray-50 border-none p-6 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    placeholder="Tell us about your plans..."
-                                />
-                            </div>
+                        <AnimatePresence mode="wait">
+                          {status === "success" ? (
+                            <motion.div
+                              key="success"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="flex flex-col items-center justify-center text-center py-16 space-y-5"
+                            >
+                              <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
+                                <CheckCircle2 className="w-10 h-10 text-green-500" />
+                              </div>
+                              <div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Received!</h3>
+                                <p className="text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                                  Our team will respond to <strong>{form.email}</strong> within 2 hours. You&apos;ll also receive a confirmation shortly.
+                                </p>
+                              </div>
+                              <Button 
+                                variant="outline" 
+                                className="rounded-xl mt-4"
+                                onClick={() => { setForm({ name:"", email:"", subject:"", message:"" }); setStatus("idle"); }}
+                              >
+                                Send Another Message
+                              </Button>
+                            </motion.div>
+                          ) : (
+                            <motion.form
+                              key="form"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              onSubmit={handleSubmit}
+                              className="space-y-6"
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Full Name *</label>
+                                        <Input 
+                                            id="name" 
+                                            name="name" 
+                                            value={form.name}
+                                            onChange={handleChange}
+                                            placeholder="John Doe" 
+                                            className="h-14 rounded-2xl bg-gray-50 border-none px-6" 
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Email Address *</label>
+                                        <Input 
+                                            id="email" 
+                                            name="email" 
+                                            type="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            placeholder="john@example.com" 
+                                            className="h-14 rounded-2xl bg-gray-50 border-none px-6"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <label htmlFor="subject" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Subject</label>
+                                    <Input 
+                                        id="subject"
+                                        name="subject"
+                                        value={form.subject}
+                                        onChange={handleChange}
+                                        placeholder="Custom Safari Inquiry" 
+                                        className="h-14 rounded-2xl bg-gray-50 border-none px-6" 
+                                    />
+                                </div>
 
-                            <Button className="w-full h-16 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-lg group">
-                                <span>Send Quest Inquiry</span>
-                                <Send className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-                            </Button>
-                        </form>
+                                <div className="space-y-2">
+                                    <label htmlFor="message" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Message *</label>
+                                    <textarea 
+                                        id="message"
+                                        name="message"
+                                        value={form.message}
+                                        onChange={handleChange}
+                                        className="w-full min-h-[200px] rounded-[2rem] bg-gray-50 border-none p-6 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                                        placeholder="Tell us about your plans..."
+                                        required
+                                    />
+                                </div>
+
+                                {(status === "error" || errorMsg) && (
+                                  <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 text-sm text-red-600 font-medium">
+                                    {errorMsg || "Something went wrong. Please try again."}
+                                  </div>
+                                )}
+
+                                <Button 
+                                    type="submit"
+                                    disabled={status === "loading"}
+                                    className="w-full h-16 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white rounded-2xl font-bold text-lg group"
+                                >
+                                    {status === "loading" ? (
+                                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Sending…</>
+                                    ) : (
+                                      <><span>Send Quest Inquiry</span><Send className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" /></>
+                                    )}
+                                </Button>
+                            </motion.form>
+                          )}
+                        </AnimatePresence>
                     </motion.div>
                 </div>
             </div>

@@ -18,8 +18,15 @@ const anthropic = new Anthropic({
 
 export async function POST(req: Request) {
   try {
+    // Security: verify the request is from Vercel Cron or an authorised admin.
+    // Vercel sends the CRON_SECRET as a Bearer token in the Authorization header.
+    const authHeader = req.headers.get("authorization");
+    const cronSecret = process.env.NEXT_PUBLIC_CRON_SECRET;
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     let requestedTopic = null;
-    let authHeader = req.headers.get("authorization");
     
     try {
         const body = await req.json();

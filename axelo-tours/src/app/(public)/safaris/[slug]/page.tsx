@@ -40,6 +40,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { ReviewsSection } from "@/components/safaris/ReviewsSection";
 
 // Mock fallbacks for itinerary
 const MOCK_ITINERARY = [
@@ -170,7 +171,7 @@ export default function SafariDetailPage({ params }: { params: Promise<{ slug: s
                             <Badge className="bg-primary/10 text-primary border-primary/20 font-bold uppercase py-1 px-4 text-xs tracking-wider ring-1 ring-primary/20">{pkg.category}</Badge>
                             <div className="flex items-center text-yellow-500 font-bold text-sm">
                                 <Star className="w-4 h-4 fill-current mr-1.5" />
-                                <span>5.0 (24 Reviews)</span>
+                                <span>Verified Reviews</span>
                             </div>
                         </div>
                         <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-8 tracking-tight leading-[1.1]">{pkg.name}</h1>
@@ -296,6 +297,10 @@ export default function SafariDetailPage({ params }: { params: Promise<{ slug: s
                             ))}
                         </Accordion>
                     </div>
+
+                    {/* Live Reviews */}
+                    <ReviewsSection packageId={pkg.id} packageName={pkg.name} />
+
                 </div>
 
                 {/* Right Side: Sticky Booking Card */}
