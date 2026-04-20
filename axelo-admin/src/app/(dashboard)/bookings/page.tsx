@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import {
   Search, Filter, Download, Eye, ChevronRight, ChevronLeft,
-  X, CheckCircle, XCircle, RefreshCw, Plus
+  X, CheckCircle, XCircle, RefreshCw, Plus, Trash2, 
+  Clock, Users, MapPin, DollarSign, Award, AlertTriangle, Activity
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
@@ -25,13 +26,6 @@ const STATUS_BG: Record<string, string> = {
   cancelled: "bg-red-100 text-red-700 border border-red-200",
 };
 
-const PAYMENT_BG: Record<string, string> = {
-  unpaid: "bg-red-100 text-red-700",
-  partial: "bg-amber-100 text-amber-700",
-  paid: "bg-emerald-100 text-emerald-700",
-  refunded: "bg-gray-100 text-gray-600",
-};
-
 export default function BookingsPage() {
   const supabase = createClient();
   const [bookings, setBookings] = useState<(Booking & { clients?: any; packages?: any })[]>([]);
@@ -42,6 +36,7 @@ export default function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [selectedBooking, setSelectedBooking] = useState<typeof bookings[0] | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -58,13 +53,15 @@ export default function BookingsPage() {
     setBookings((data as any[]) || []);
     setTotal(count || 0);
     setLoading(false);
-  }, [page, statusFilter, paymentFilter]);
+  }, [page, statusFilter, paymentFilter, supabase]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   const updateStatus = async (id: string, status: string) => {
+    setUpdating(id);
     await supabase.from("bookings").update({ status }).eq("id", id);
-    fetchBookings();
+    await fetchBookings();
+    setUpdating(null);
     setSelectedBooking(null);
   };
 
@@ -91,8 +88,8 @@ export default function BookingsPage() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="p-4 sm:p-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+    <div className="p-8 space-y-10 bg-[#fafafa] min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
             <span className="w-2 h-8 bg-indigo-600 rounded-full hidden md:block" />
@@ -116,155 +113,158 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col mb-8">
-          <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
-               <div className="flex items-center gap-4 flex-1">
-                   <div className="relative w-full max-w-sm">
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1">
+                    <div className="relative w-full max-w-sm">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input 
                             value={search} onChange={e => setSearch(e.target.value)} 
                             placeholder="Identify Client or Manifest ID..."
                             className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30" 
                         />
-                   </div>
-                   <div className="flex gap-2">
-                      <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[140px]">
-                        <option value="all">All States</option>
-                        {["pending","confirmed","completed","cancelled"].map(s => (
-                          <option key={s} value={s} className="capitalize">{s}</option>
-                        ))}
-                      </select>
-                      <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[140px]">
-                        <option value="all">Financials</option>
-                        {["unpaid","partial","paid","refunded"].map(s => (
-                          <option key={s} value={s} className="capitalize">{s}</option>
-                        ))}
-                      </select>
-                   </div>
-               </div>
-               <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                    </div>
+                    <div className="flex gap-2">
+                        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+                          className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[140px]">
+                          <option value="all">All States</option>
+                          {["pending","confirmed","completed","cancelled"].map(s => (
+                            <option key={s} value={s} className="capitalize">{s}</option>
+                          ))}
+                        </select>
+                        <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
+                          className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[140px]">
+                          <option value="all">Financials</option>
+                          {["unpaid","partial","paid","refunded"].map(s => (
+                            <option key={s} value={s} className="capitalize">{s}</option>
+                          ))}
+                        </select>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
                     <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
                         <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> 
                         {total} Total Bookings
                     </span>
-               </div>
-          </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-white text-[10px] uppercase text-gray-400 font-black tracking-widest border-b border-gray-100">
-              <tr>
-                {["Manifest ID","Client Manifest","Destination / Package","Dispatch Date","Manifest Status","Financials","Manifest actions"].map(h => (
-                  <th key={h} className="px-6 py-4 font-bold tracking-widest uppercase">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {loading ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center"><RefreshCw className="w-5 h-5 text-primary animate-spin mx-auto" /></td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-bold uppercase text-[10px] tracking-widest">No entries found in manifest.</td></tr>
-              ) : filtered.map(b => (
-                <tr key={b.id} className="group hover:bg-gray-50/50 transition-all border-b border-gray-50">
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                      #{b.id.split("-")[0].toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-900 leading-tight tracking-tighter">
-                        {b.clients?.full_name ?? "Missing Identity"}
-                      </span>
-                      <span className="text-[11px] text-gray-400 font-medium">{b.clients?.email}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                       <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                          <MapPin className="w-4 h-4" />
-                       </div>
-                       <span className="font-bold text-gray-700 tracking-tighter truncate max-w-[150px]">{b.packages?.name ?? "Custom Itinerary"}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-700 tracking-tighter">{format(new Date(b.travel_date), "dd MMM yyyy")}</span>
-                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Scheduled Arrival</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                      b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                      b.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                      b.status === 'completed' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                      'bg-gray-50 text-gray-400 border-gray-100'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        b.status === 'confirmed' ? 'bg-emerald-600' :
-                        b.status === 'pending' ? 'bg-amber-600' :
-                        b.status === 'completed' ? 'bg-indigo-600' :
-                        'bg-gray-400'
-                      }`} />
-                      {b.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="font-black text-gray-900 text-[13px] tracking-tighter">{formatCurrency(b.total_amount, b.currency)}</span>
-                      <span className={`text-[9px] font-black uppercase tracking-widest ${
-                        b.payment_status === 'paid' ? 'text-emerald-500' :
-                        b.payment_status === 'partial' ? 'text-amber-500' :
-                        'text-red-500'
-                      }`}>
-                        {b.payment_status}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform scale-95 group-hover:scale-100">
-                      <Button 
-                        variant="ghost" size="icon" 
-                        onClick={() => setSelectedBooking(b)}
-                        className="h-9 w-9 rounded-xl hover:bg-white hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-indigo-100"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" size="icon" 
-                        className="h-9 w-9 rounded-xl hover:bg-white hover:text-red-600 hover:shadow-sm border border-transparent hover:border-red-100"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </div>
+            </div>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-sm text-gray-500">Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</p>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-medium text-gray-700">Page {page + 1} / {totalPages}</span>
-              <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+        {/* Table Container */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-white text-[10px] uppercase text-gray-400 font-black tracking-widest border-b border-gray-100">
+                <tr>
+                  {["Manifest ID","Client Manifest","Destination / Package","Dispatch Date","Manifest Status","Financials","Manifest actions"].map(h => (
+                    <th key={h} className="px-6 py-4 font-bold tracking-widest uppercase">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {loading ? (
+                  <tr><td colSpan={7} className="px-6 py-12 text-center"><RefreshCw className="w-5 h-5 text-primary animate-spin mx-auto" /></td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-bold uppercase text-[10px] tracking-widest">No entries found in manifest.</td></tr>
+                ) : filtered.map(b => (
+                  <tr key={b.id} className="group hover:bg-gray-50/50 transition-all border-b border-gray-50">
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                        #{b.id.split("-")[0].toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-900 leading-tight tracking-tighter">
+                          {b.clients?.full_name ?? "Missing Identity"}
+                        </span>
+                        <span className="text-[11px] text-gray-400 font-medium">{b.clients?.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <MapPin className="w-4 h-4" />
+                        </div>
+                        <span className="font-bold text-gray-700 tracking-tighter truncate max-w-[150px]">{b.packages?.name ?? "Custom Itinerary"}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-700 tracking-tighter">{format(new Date(b.travel_date), "dd MMM yyyy")}</span>
+                        <span className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Scheduled Arrival</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                        b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        b.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                        b.status === 'completed' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                        'bg-gray-50 text-gray-400 border-gray-100'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          b.status === 'confirmed' ? 'bg-emerald-600' :
+                          b.status === 'pending' ? 'bg-amber-600' :
+                          b.status === 'completed' ? 'bg-indigo-600' :
+                          'bg-gray-400'
+                        }`} />
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-black text-gray-900 text-[13px] tracking-tighter">{formatCurrency(b.total_amount, b.currency)}</span>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${
+                          b.payment_status === 'paid' ? 'text-emerald-500' :
+                          b.payment_status === 'partial' ? 'text-amber-500' :
+                          'text-red-500'
+                        }`}>
+                          {b.payment_status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform scale-95 group-hover:scale-100">
+                        <Button 
+                          variant="ghost" size="icon" 
+                          onClick={() => setSelectedBooking(b)}
+                          className="h-9 w-9 rounded-xl hover:bg-white hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-indigo-100"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" size="icon" 
+                          className="h-9 w-9 rounded-xl hover:bg-white hover:text-red-600 hover:shadow-sm border border-transparent hover:border-red-100"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+              <p className="text-sm text-gray-500">Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</p>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm font-medium text-gray-700">Page {page + 1} / {totalPages}</span>
+                <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>

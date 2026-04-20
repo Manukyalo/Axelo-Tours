@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, RefreshCw, ChevronRight, User, Mail, Phone, Globe, FileText } from "lucide-react";
+import { Search, X, RefreshCw, ChevronRight, User, Mail, Phone, Globe, FileText, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Client, Booking } from "@/types";
 import { format } from "date-fns";
@@ -53,7 +53,8 @@ export default function ClientsPage() {
   );
 
   return (
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+    <div className="p-8 space-y-10 bg-[#fafafa] min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
             <span className="w-2 h-8 bg-indigo-600 rounded-full hidden md:block" />
@@ -150,78 +151,69 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="flex-grow overflow-y-auto p-10 space-y-12">
-                {/* Visual Identity Hub */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[
-                    { icon: Mail, label: "Channel Email", value: selected.email, color: "indigo" },
-                    { icon: Phone, label: "Global Line", value: selected.phone || "No Connection", color: "blue" },
-                    { icon: Globe, label: "Nationality", value: selected.nationality || "Unknown", color: "emerald" },
-                    { icon: FileText, label: "Passport Code", value: selected.passport_no || "TBA", color: "amber" },
-                  ].map(({ icon: Icon, label, value, color }) => (
-                    <div key={label} className="group p-5 rounded-[24px] bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all hover:-translate-y-1">
-                      <div className={`w-10 h-10 rounded-xl bg-${color}-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-all`}>
-                        <Icon className={`w-4 h-4 text-${color}-600`} />
-                      </div>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-1">{label}</p>
-                      <p className="text-sm font-black text-gray-900 tracking-tighter truncate leading-none">{value}</p>
-                    </div>
-                  ))}
+              <div className="p-10 overflow-y-auto flex-grow space-y-10">
+                <div className="grid grid-cols-3 gap-6">
+                   <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                        <Mail className="w-3 h-3" /> Communication Node
+                      </p>
+                      <p className="font-bold text-gray-900">{selected.email}</p>
+                   </div>
+                   <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                        <Phone className="w-3 h-3" /> Signal Line
+                      </p>
+                      <p className="font-bold text-gray-900">{selected.phone || "No signal established"}</p>
+                   </div>
+                   <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                        <Globe className="w-3 h-3" /> Origin / Jurisdiction
+                      </p>
+                      <p className="font-bold text-gray-900 font-mono text-xs uppercase tracking-tight">{selected.nationality || "Unknown Territory"}</p>
+                   </div>
                 </div>
 
-                {/* Booking History Station */}
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black text-gray-900 tracking-tighter flex items-center gap-3">
-                      <div className="w-1.5 h-6 bg-primary rounded-full" />
-                      Client Manifest History
-                      <span className="text-sm font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">{clientBookings.length} Logged Entries</span>
-                    </h3>
-                  </div>
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-black text-gray-900 tracking-tighter flex items-center gap-2">
+                            <Activity className="w-5 h-5 text-indigo-600" />
+                            Operational Engagement Logs
+                        </h3>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{clientBookings.length} Missions Logged</span>
+                    </div>
 
-                  {loadingBookings ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-[32px] border border-dashed border-gray-200">
-                      <RefreshCw className="w-8 h-8 animate-spin text-indigo-200 mb-4" />
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Accessing Secure Records...</p>
-                    </div>
-                  ) : clientBookings.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-[32px] border border-dashed border-gray-200">
-                      <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No Transaction History Logged</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {clientBookings.map(b => (
-                        <div key={b.id} className="group flex items-center justify-between p-6 rounded-[24px] bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-gray-100 transition-all cursor-default">
-                          <div className="flex items-center gap-5">
-                             <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                <Globe className="w-5 h-5" />
-                             </div>
-                             <div>
-                                <p className="font-black text-gray-900 tracking-tight leading-tight">{b.packages?.name ?? "Custom Itinerary Deployment"}</p>
-                                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                                   {format(new Date(b.travel_date), "dd MMM yyyy")} • {b.num_adults + b.num_children} Personnel
-                                </p>
-                             </div>
-                          </div>
-                          <div className="flex items-center gap-8">
-                             <div className="text-right">
-                                <p className="font-black text-gray-900 text-lg tracking-tighter leading-tight">{formatCurrency(b.total_amount, b.currency)}</p>
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border mt-1 shadow-sm ${
-                                  b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                  b.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                  'bg-indigo-50 text-indigo-600 border-indigo-100'
-                                }`}>
-                                   {b.status}
-                                </span>
-                             </div>
-                             <div className="p-2 rounded-xl bg-gray-50 text-gray-300 transition-all">
-                                <ChevronRight className="w-5 h-5" />
-                             </div>
-                          </div>
+                    {loadingBookings ? (
+                        <div className="flex justify-center py-20"><RefreshCw className="w-6 h-6 animate-spin text-gray-200" /></div>
+                    ) : clientBookings.length === 0 ? (
+                        <div className="bg-gray-50/50 rounded-[32px] border border-dashed border-gray-200 py-16 text-center">
+                            <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.3em]">No deployment records found</p>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                    ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                            {clientBookings.map(b => (
+                                <div key={b.id} className="group bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-12 h-12 rounded-[18px] bg-gray-50 flex items-center justify-center text-gray-400 font-black text-xs group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                            #{b.id.split("-")[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-gray-900 tracking-tighter text-lg">{b.packages?.name || "Custom Mission"}</p>
+                                            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest">{format(new Date(b.travel_date), "dd MMM yyyy")} Dispatch</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-8">
+                                        <div className="text-right">
+                                            <p className="font-black text-gray-900">{formatCurrency(b.total_amount, b.currency)}</p>
+                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{b.payment_status}</p>
+                                        </div>
+                                        <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border ${STATUS_BG[b.status as keyof typeof STATUS_BG] || "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                                            {b.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
               </div>
             </div>
