@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Search, RefreshCw, CheckCircle2, XCircle, 
   Trash2, Edit2, Globe, Mail, User, Shield, 
-  Plus, ExternalLink, Key, AlertTriangle, Filter, Headphones, TrendingUp
+  Plus, ExternalLink, Key, AlertTriangle, Filter, Headphones, TrendingUp,
+  Briefcase, Activity, ShieldCheck, Zap, ArrowUpRight, ChevronRight,
+  Target, Award, Network
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Partner } from "@/types";
@@ -114,268 +116,266 @@ export default function PartnersPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const getTierColor = (tier: string) => {
+  const getTierBadge = (tier: string) => {
     switch (tier) {
-      case "platinum": return "bg-indigo-100 text-indigo-700 border-indigo-200";
-      case "gold": return "bg-amber-100 text-amber-700 border-amber-200";
-      case "silver": return "bg-slate-100 text-slate-700 border-slate-200";
-      default: return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved": return "bg-emerald-100 text-emerald-700";
-      case "rejected": return "bg-red-100 text-red-700";
-      case "pending": return "bg-blue-100 text-blue-700";
-      default: return "bg-gray-100 text-gray-700";
+      case "platinum": return { label: "Platinum Elite", class: "bg-indigo-600 text-white shadow-indigo-100", icon: Award };
+      case "gold": return { label: "Gold Global", class: "bg-amber-500 text-white shadow-amber-100", icon: Target };
+      case "silver": return { label: "Silver Node", class: "bg-slate-900 text-white shadow-slate-100", icon: Network };
+      default: return { label: "Generic Unit", class: "bg-gray-400 text-white shadow-gray-100", icon: Briefcase };
     }
   };
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="p-8 space-y-10 bg-[#fafafa] min-h-screen">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
-            <span className="w-2 h-8 bg-primary rounded-full hidden md:block" />
-            B2B Relationship Hub
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-indigo-600/10 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+              <Network className="w-3 h-3" />
+              Global Partner Network Manifest
+            </div>
+          </div>
+          <h1 className="text-5xl font-black text-gray-900 tracking-tighter leading-none mb-4 uppercase">
+            Affiliate <span className="text-indigo-600 italic">Network</span>
           </h1>
-          <p className="text-gray-500 mt-2 font-bold italic">
-            Manage global partnerships, neural approval workflows, and secure API access nodes.
+          <p className="text-gray-500 font-medium max-w-xl text-lg leading-relaxed italic">
+            Synchronizing B2B relationships, multi-tier commission protocols, and high-velocity API access nodes across the Axelo ecosystem.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[22px] border border-gray-100 shadow-sm">
-          <button 
-            onClick={() => setFilterStatus("all")}
-            className={`px-5 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "all" ? "bg-gray-900 text-white shadow-xl" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
-          >All</button>
-          <button 
-            onClick={() => setFilterStatus("pending")}
-            className={`px-5 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "pending" ? "bg-indigo-600 text-white shadow-xl" : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50"}`}
-          >Pending</button>
-          <button 
-            onClick={() => setFilterStatus("approved")}
-            className={`px-5 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "approved" ? "bg-emerald-600 text-white shadow-xl" : "text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
-          >Approved</button>
-        </div>
-      </div>
 
-      {/* Main Grid/Table */}
-      <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden flex flex-col">
-        <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input 
-              value={search} onChange={e => setSearch(e.target.value)} 
-              placeholder="Search partner network..."
-              className="w-full pl-14 pr-6 h-14 border border-gray-100 rounded-2xl text-sm bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-bold tracking-tight shadow-inner" 
-            />
+        <div className="flex items-center gap-4">
+          <div className="bg-white p-4 rounded-[24px] border border-gray-100 shadow-sm flex items-center gap-4">
+             <div className="flex flex-col items-end">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Network Integrity</span>
+                <span className="text-sm font-black text-emerald-600 flex items-center gap-2 tracking-tighter">
+                  <ShieldCheck className="w-4 h-4" />
+                  Verified Access Only
+                </span>
+             </div>
+             <div className="w-px h-8 bg-gray-100 mx-2" />
+             <Button onClick={fetchPartners} className="w-12 h-12 bg-gray-900 hover:bg-black text-white rounded-2xl shadow-xl shadow-gray-200 transition-all flex items-center justify-center p-0">
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+             </Button>
           </div>
-          <button 
-            onClick={fetchPartners}
-            className="w-14 h-14 flex items-center justify-center text-gray-400 hover:text-primary transition-all bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md"
-            title="Refresh list"
-          >
-            <RefreshCw className={`w-5 h-5 stroke-[3px] ${loading ? "animate-spin text-primary" : ""}`} />
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-white border-b border-gray-50">
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Partner Details</th>
-                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Location & Pax</th>
-                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Type & Tier</th>
-                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {loading && partners.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-24 text-center">
-                    <RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-primary opacity-20" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Syncing Partnership Registry...</p>
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-24 text-center font-black uppercase tracking-widest text-gray-400 italic">
-                    No partner nodes detected in current manifest.
-                  </td>
-                </tr>
-              ) : filtered.map(partner => (
-                <tr key={partner.id} className="group hover:bg-gray-50/50 transition-all">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 bg-gray-900 flex items-center justify-center font-black text-white text-xl rounded-2xl shadow-xl shadow-gray-200 group-hover:scale-105 transition-all italic">
-                        {partner.company_name[0]}
-                      </div>
-                      <div>
-                        <h3 className="font-black text-gray-900 text-[15px] tracking-tighter uppercase italic group-hover:text-primary transition-colors">{partner.company_name}</h3>
-                        <div className="flex flex-wrap items-center gap-4 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          <span className="flex items-center gap-1.5 lowercase hover:text-primary transition-colors"><Mail className="w-3.5 h-3.5" /> {partner.email}</span>
-                          {partner.phone && <span className="flex items-center gap-1.5"><Headphones className="w-3.5 h-3.5 italic" /> {partner.phone}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-6">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-[11px] font-black text-gray-700 uppercase tracking-tight">
-                        <Globe className="h-3.5 w-3.5 text-indigo-400 stroke-[2.5px]" />
-                        {partner.country || "GLOBAL_NODE"}
-                      </div>
-                      <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">
-                        <TrendingUp className="w-3 h-3 text-emerald-400" />
-                        {partner.annual_pax ? `${partner.annual_pax.toLocaleString()} PAX/YR` : "VOLUME_PENDING"}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-6 transition-all group-hover:px-8">
-                    <div className="space-y-2 text-[10px] font-black uppercase tracking-widest">
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-300 w-12 underline decoration-gray-100">Spec</span>
-                        <span className="text-gray-900 italic tracking-tighter">{partner.partner_type?.replace("_", " ") || "GENERIC"}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-300 w-12 underline decoration-gray-100">Grade</span>
-                        <span className={`px-2.5 py-1 rounded-full border ${getTierColor(partner.tier)} text-[8px] italic`}>
-                          {partner.tier}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-6">
-                    <span className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
-                      partner.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                      partner.status === 'pending' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                      'bg-rose-50 text-rose-600 border-rose-100'
-                    }`}>
-                      {partner.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
-                      {partner.status === "pending" && (
-                        <>
-                          <button 
-                            onClick={() => updatePartner(partner.id, { status: "approved" })}
-                            className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 shadow-sm"
-                            title="Authorize Node"
-                          >
-                            <CheckCircle2 className="w-5 h-5 stroke-[2.5px]" />
-                          </button>
-                        </>
-                      )}
-                      <button 
-                        onClick={() => setEditingPartner(partner)}
-                        className="p-3 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary/20 hover:scale-110 transition-all shadow-sm"
-                        title="Calibrate Assets"
-                      >
-                        <Edit2 className="w-5 h-5 stroke-[2.5px]" />
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setPartnerToDelete(partner);
-                          setDeleteConfirmOpen(true);
-                        }}
-                        className="p-3 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100 hover:scale-110 transition-all shadow-sm"
-                        title="Decommission"
-                      >
-                        <Trash2 className="w-5 h-5 stroke-[2.5px]" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
 
-      {/* Edit Partner Modal */}
-      <Dialog open={!!editingPartner} onOpenChange={() => setEditingPartner(null)}>
-        <DialogContent className="max-w-xl rounded-[32px] p-8 border-0 shadow-2xl">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-4">
-               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-primary" />
-               </div>
-               <div>
-                  <DialogTitle className="text-xl font-black">Partner Configuration</DialogTitle>
-                  <p className="text-xs text-gray-500">Managing {editingPartner?.company_name}</p>
-               </div>
-            </div>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">Assigned Tier</label>
-                <select 
-                  className="w-full h-12 px-4 rounded-xl border border-gray-100 bg-gray-50 font-bold focus:ring-4 focus:ring-primary/10 outline-none"
-                  value={editingPartner?.tier}
-                  onChange={e => editingPartner && setEditingPartner({...editingPartner, tier: e.target.value as any})}
-                >
-                  <option value="silver">Silver Tier (Base)</option>
-                  <option value="gold">Gold Tier (Preferred)</option>
-                  <option value="platinum">Platinum Tier (VVIP)</option>
-                </select>
+      {/* Strategic KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: "Active Nodes", value: String(partners.filter(p => p.status === 'approved').length), icon: Network, color: "indigo", trend: "Mainframe Link" },
+          { label: "Queue Volume", value: String(partners.filter(p => p.status === 'pending').length), icon: Activity, color: "amber", trend: "Neural Review" },
+          { label: "Platinum Tier", value: String(partners.filter(p => p.tier === 'platinum').length), icon: Award, color: "fuchsia", trend: "VVIP Logistics" },
+          { label: "Network Growth", value: "+12.4%", icon: TrendingUp, color: "emerald", trend: "Q2 Momentum" },
+        ].map(({ label, value, icon: Icon, color, trend }) => (
+          <div key={label} className="group bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500 relative overflow-hidden">
+            <div className={`absolute top-0 right-0 w-32 h-32 bg-${color}-50/50 rounded-full -mr-16 -mt-16 blur-3xl group-hover:scale-150 transition-transform duration-700`} />
+            
+            <div className="flex items-start justify-between mb-8 relative z-10">
+              <div className={`w-14 h-14 rounded-2xl bg-${color}-50 flex items-center justify-center text-${color}-600 shadow-sm group-hover:scale-110 transition-all duration-500`}>
+                <Icon className="w-7 h-7" />
               </div>
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">Verification Status</label>
-                <select 
-                  className="w-full h-12 px-4 rounded-xl border border-gray-100 bg-gray-50 font-bold focus:ring-4 focus:ring-primary/10 outline-none"
-                  value={editingPartner?.status}
-                  onChange={e => editingPartner && setEditingPartner({...editingPartner, status: e.target.value as any})}
-                >
-                  <option value="pending">Pending Review</option>
-                  <option value="approved">Approved / Active</option>
-                  <option value="rejected">Rejected</option>
-                </select>
+              <div className="bg-gray-50 px-3 py-1 rounded-full text-[9px] font-black text-gray-400 group-hover:bg-white group-hover:shadow-sm transition-all uppercase tracking-widest leading-none">
+                {trend}
               </div>
             </div>
 
+            <div className="relative z-10">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 leading-none">{label}</p>
+              <h3 className="text-4xl font-black text-gray-900 tracking-tighter">
+                {value}
+              </h3>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Manifest registry */}
+      <div className="space-y-6">
+          <div className="flex items-center justify-between gap-6 flex-wrap">
+              <div className="flex bg-white p-1 rounded-2xl border border-gray-100 shadow-sm">
+                  <button onClick={() => setFilterStatus("all")} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "all" ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>Global Manifest</button>
+                  <button onClick={() => setFilterStatus("pending")} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "pending" ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>Neural Queue</button>
+                  <button onClick={() => setFilterStatus("approved")} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "approved" ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>Verified Nodes</button>
+              </div>
+
+              <div className="flex-1 max-w-md relative">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                <input 
+                  value={search} onChange={e => setSearch(e.target.value)} 
+                  placeholder="Identify partner unit..."
+                  className="w-full pl-14 pr-6 h-14 border border-gray-100 rounded-[20px] text-sm bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold tracking-tight shadow-sm placeholder:text-gray-300" 
+                />
+              </div>
+
+              <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
+                  <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                  {filtered.length} Affiliate Units Active
+              </div>
+          </div>
+
+          <div className="bg-white rounded-[40px] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden relative">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-[#fcfcfc] text-[10px] uppercase text-gray-400 font-bold tracking-[0.2em] border-b border-gray-100">
+                  <tr>
+                    <th className="px-10 py-7">Partner Identity</th>
+                    <th className="px-8 py-7">Geo-Location</th>
+                    <th className="px-8 py-7">Capacity (PAX)</th>
+                    <th className="px-8 py-7">Tier Protocol</th>
+                    <th className="px-8 py-7 text-right">Operational Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {loading && partners.length === 0 ? (
+                    <tr><td colSpan={5} className="px-8 py-32 text-center"><RefreshCw className="w-12 h-12 animate-spin text-indigo-600 mx-auto opacity-10" /></td></tr>
+                  ) : filtered.length === 0 ? (
+                    <tr><td colSpan={5} className="px-8 py-40 text-center text-gray-300 font-black uppercase text-[11px] tracking-[0.4em] italic opacity-50">Zero Partnership Signals Detected.</td></tr>
+                  ) : filtered.map(partner => (
+                    <tr key={partner.id} className="group hover:bg-[#fafafa] transition-all duration-300">
+                      <td className="px-10 py-7">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 rounded-[24px] bg-gray-900 border-4 border-white flex items-center justify-center font-black text-white text-2xl shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 italic">
+                                {partner.company_name[0]}
+                            </div>
+                            <div>
+                                <span className="font-black text-gray-900 tracking-tighter text-xl uppercase italic block underline decoration-gray-100">{partner.company_name}</span>
+                                <div className="flex items-center gap-3 mt-1.5">
+                                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                      {partner.email}
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-7">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Region</span>
+                            <div className="flex items-center gap-2 font-black text-gray-800 tracking-tighter text-sm uppercase">
+                               <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                               {partner.country || "Global Link"}
+                            </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-7">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Annual Signal</span>
+                            <div className="flex items-center gap-2 font-black text-indigo-600 tracking-tighter text-sm">
+                               <TrendingUp className="w-3.5 h-3.5" />
+                               {partner.annual_pax ? `${partner.annual_pax.toLocaleString()} Units` : "Volume N/A"}
+                            </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-7">
+                        {(() => {
+                           const tier = getTierBadge(partner.tier);
+                           const Icon = tier.icon;
+                           return (
+                             <div className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-[20px] text-[10px] font-black uppercase tracking-widest ${tier.class}`}>
+                                <Icon className="w-4 h-4" />
+                                {tier.label}
+                             </div>
+                           );
+                        })()}
+                      </td>
+                      <td className="px-10 py-7 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                            <span className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm transition-all ${
+                              partner.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                              partner.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
+                              'bg-rose-50 text-rose-600 border-rose-100'
+                            }`}>
+                              {partner.status === 'approved' ? <ShieldCheck className="w-3.5 h-3.5" /> : partner.status === 'pending' ? <Activity className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                              {partner.status}
+                            </span>
+                            
+                            <button 
+                                onClick={() => setEditingPartner(partner)}
+                                className="p-3 bg-white hover:bg-gray-900 border border-gray-100 hover:border-gray-900 text-gray-400 hover:text-white rounded-2xl shadow-sm transition-all duration-300 group/btn"
+                            >
+                                <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                            </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+      </div>
+
+      {/* Edit Partner Modal Overhaul */}
+      <Dialog open={!!editingPartner} onOpenChange={() => setEditingPartner(null)}>
+        <DialogContent className="max-w-xl rounded-[48px] p-0 border-none shadow-3xl overflow-hidden bg-gray-50">
+          <div className="p-10 bg-white border-b border-gray-100">
+             <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                   <div className="w-16 h-16 bg-indigo-600 flex items-center justify-center font-black text-white text-2xl rounded-[24px] shadow-2xl shadow-indigo-100 italic">
+                    {editingPartner?.company_name[0]}
+                   </div>
+                   <div>
+                      <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic">{editingPartner?.company_name}</h2>
+                      <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">{editingPartner?.email}</p>
+                   </div>
+                </div>
+                <button onClick={() => setEditingPartner(null)} className="p-3 hover:bg-gray-50 rounded-full transition-colors">
+                  <XCircle className="w-6 h-6 text-gray-300" />
+                </button>
+             </div>
+             
+             <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-6 rounded-[32px] border border-gray-100">
+                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-4">Partner Tier Protocol</span>
+                   <select 
+                      className="w-full bg-transparent font-black text-gray-900 text-lg tracking-tighter outline-none cursor-pointer"
+                      value={editingPartner?.tier}
+                      onChange={e => editingPartner && setEditingPartner({...editingPartner, tier: e.target.value as any})}
+                    >
+                      <option value="silver">Silver Node (Base)</option>
+                      <option value="gold">Gold Global (Mid)</option>
+                      <option value="platinum">Platinum Elite (High)</option>
+                    </select>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-[32px] border border-gray-100">
+                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-4">Integrity Status</span>
+                   <select 
+                      className="w-full bg-transparent font-black text-gray-900 text-lg tracking-tighter outline-none cursor-pointer"
+                      value={editingPartner?.status}
+                      onChange={e => editingPartner && setEditingPartner({...editingPartner, status: e.target.value as any})}
+                    >
+                      <option value="pending">Neural Review</option>
+                      <option value="approved">Verified Unit</option>
+                      <option value="rejected">Blacklisted</option>
+                    </select>
+                </div>
+             </div>
+          </div>
+          
+          <div className="p-10 space-y-8">
             <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">System API Key</label>
-              <div className="flex gap-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-3 block">Neural API Key Authorization</label>
+              <div className="flex gap-3 bg-white p-2 rounded-[24px] border border-gray-100 shadow-inner">
                 <input 
                   readOnly
-                  className="flex-1 h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-xs font-mono text-gray-500 outline-none"
-                  value={editingPartner?.api_key || "No key generated yet"}
+                  className="flex-1 px-4 text-xs font-mono text-gray-400 outline-none bg-transparent"
+                  value={editingPartner?.api_key || "UNASSIGNED_LOGISTICS_TOKEN"}
                 />
                 <Button 
                    onClick={() => editingPartner && generateApiKey(editingPartner)}
-                   variant="outline" className="h-12 rounded-xl px-4 border-gray-100 hover:bg-gray-50"
+                   className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-6 h-12 shadow-lg shadow-indigo-100 transition-all font-black uppercase text-[10px] tracking-widest"
                 >
-                   <RefreshCw className="w-4 h-4" />
+                   <RefreshCw className={`w-4 h-4 mr-2 ${isSaving ? 'animate-spin' : ''}`} />
+                   Regenerate
                 </Button>
               </div>
-              <p className="text-[9px] text-gray-400 mt-2">API keys provide programmatic access to B2B net rates and bookings.</p>
+              <p className="text-[9px] text-gray-400 mt-3 italic">Authorized nodes gain programmatic access to high-fidelity rate sheets.</p>
             </div>
 
-            <div className="flex flex-col gap-3 pt-4">
-              {editingPartner?.status === 'pending' && (
-                <Button 
-                  className="w-full h-12 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100 flex items-center justify-center gap-2"
-                  onClick={() => editingPartner && handleApprove(editingPartner)}
-                  disabled={isSaving}
-                >
-                  {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : (
-                    <>
-                      <CheckCircle2 className="w-5 h-5" />
-                      Approve & Send Welcome Email
-                    </>
-                  )}
-                </Button>
-              )}
-              
-              <div className="flex gap-3">
-                <Button 
-                  className="flex-1 h-12 rounded-2xl bg-gray-900 text-white font-bold hover:bg-gray-800"
+            <div className="flex flex-col gap-4">
+               <Button 
+                  className="w-full h-16 rounded-[24px] bg-gray-900 text-white font-black uppercase text-[11px] tracking-[0.2em] hover:bg-black shadow-2xl shadow-gray-200 transition-all"
                   onClick={() => editingPartner && updatePartner(editingPartner.id, { 
                     tier: editingPartner.tier, 
                     status: editingPartner.status,
@@ -383,45 +383,61 @@ export default function PartnersPage() {
                   })}
                   disabled={isSaving}
                 >
-                  {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                  {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : "Commit Calibration changes"}
                 </Button>
-                <Button 
-                  variant="ghost" className="h-12 rounded-2xl flex-1"
-                  onClick={() => setEditingPartner(null)}
-                >Cancel</Button>
-              </div>
+
+                <div className="flex items-center gap-4">
+                   {editingPartner?.status === 'pending' && (
+                     <Button 
+                        className="flex-1 h-14 rounded-[20px] bg-emerald-600 text-white font-black uppercase text-[10px] tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-100"
+                        onClick={() => editingPartner && handleApprove(editingPartner)}
+                     >
+                        Finalize Verification
+                     </Button>
+                   )}
+                   <Button 
+                      className="flex-1 h-14 rounded-[20px] bg-rose-50 text-rose-600 hover:bg-rose-100 font-black uppercase text-[10px] tracking-widest border border-rose-100"
+                      onClick={() => {
+                         setPartnerToDelete(editingPartner);
+                         setDeleteConfirmOpen(true);
+                       }}
+                    >
+                      Decommission Node
+                   </Button>
+                </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation Overhaul */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="rounded-[32px] border-0 shadow-2xl p-8">
-          <DialogHeader>
-            <div className="w-16 h-16 bg-red-100 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+        <DialogContent className="max-w-md rounded-[48px] border-none shadow-3xl p-10 bg-white">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-24 h-24 bg-rose-100 rounded-[32px] flex items-center justify-center mb-8 shadow-xl shadow-rose-50">
+              <AlertTriangle className="w-10 h-10 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-gray-900">Confirm Partner Deletion</DialogTitle>
-            <DialogDescription className="text-gray-500 mt-2">
-              Are you sure you want to remove <span className="font-black text-gray-900">"{partnerToDelete?.company_name}"</span>? 
-              This will revoke their API access and remove them from the partnership registry. This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-4 mt-8">
-            <Button 
-              variant="ghost"
-              onClick={() => setDeleteConfirmOpen(false)}
-              className="flex-1 h-12 rounded-2xl border border-gray-100 font-bold hover:bg-gray-50"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={() => partnerToDelete && deletePartner(partnerToDelete.id)}
-              className="flex-1 h-12 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-200"
-            >
-              Confirm Dismissal
-            </Button>
+            <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-4 uppercase">Irreversible <span className="text-rose-600 italic">Dismissal</span></h2>
+            <p className="text-gray-500 font-medium leading-relaxed italic">
+              You are about to decomission the affiliate node <span className="font-black text-gray-900">"{partnerToDelete?.company_name}"</span>. 
+              This action will sever all API links and revoke ecosystem privileges.
+            </p>
+            
+            <div className="flex w-full gap-4 mt-10">
+              <Button 
+                variant="ghost"
+                onClick={() => setDeleteConfirmOpen(false)}
+                className="flex-1 h-14 rounded-[20px] font-black uppercase text-[10px] tracking-widest text-gray-400 hover:bg-gray-50 border border-gray-100"
+              >
+                Abort
+              </Button>
+              <Button 
+                onClick={() => partnerToDelete && deletePartner(partnerToDelete.id)}
+                className="flex-1 h-14 rounded-[20px] bg-rose-600 hover:bg-rose-700 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-rose-100"
+              >
+                Execute dismissal
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

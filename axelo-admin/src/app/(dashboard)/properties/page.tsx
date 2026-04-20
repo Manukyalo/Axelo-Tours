@@ -134,32 +134,59 @@ export default function PropertiesPage() {
   const roomTypes = [...new Set(rates.filter(r => r.property_id === calcProp).map(r => r.room_type))];
 
   return (
-    <div className="p-8 pb-32 max-w-7xl mx-auto min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+    <div className="p-10 pb-32 space-y-12 bg-[#fafafa] min-h-screen">
+      {/* Strategic Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
-            <span className="w-2 h-8 bg-primary rounded-full hidden md:block" />
-            Asset Logistics Hub
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-indigo-600/10 text-indigo-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 border border-indigo-100 shadow-sm">
+              <Package className="w-3.5 h-3.5" />
+              Global Inventory Governance
+            </div>
+            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Infrastructure Verified
+            </div>
+          </div>
+          <h1 className="text-6xl font-black text-gray-900 tracking-tighter leading-none mb-6 uppercase italic">
+            Asset <span className="text-indigo-600 font-black">Nodes</span>
           </h1>
-          <p className="text-gray-500 mt-2 font-bold italic">Manage lodge contracts, neural net rates, and margin calibrations.</p>
+          <p className="text-gray-500 font-medium max-w-2xl text-xl leading-snug italic">
+            Orchestrating global safari infrastructure. Managing lodge contracts, neural net rates, and strategic margin calibrations via high-fidelity asset manifests.
+          </p>
         </div>
-        <Button onClick={findProspects} disabled={prospecting} variant="outline" className="gap-2 bg-white border-gray-200 text-gray-600 hover:bg-gray-50 font-black uppercase tracking-widest text-[10px] h-12 px-6 rounded-2xl transition-all shadow-sm">
-          {prospecting ? <RefreshCw className="w-4 h-4 animate-spin text-primary" /> : <Search className="w-4 h-4 text-primary stroke-[3px]" />}
-          Scan Prospects
-        </Button>
+
+        <div className="flex items-center gap-4">
+            <Button 
+                onClick={fetchData}
+                variant="outline"
+                className="gap-3 border-gray-200 text-gray-900 bg-white hover:bg-gray-50 font-black uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-sm transition-all"
+            >
+                <RefreshCw className={`w-5 h-5 text-indigo-600 ${loading ? 'animate-spin' : ''}`} />
+                Sync Registry
+            </Button>
+            <Button 
+                onClick={findProspects}
+                disabled={prospecting}
+                className="gap-3 bg-gray-900 hover:bg-black text-white font-black uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-2xl shadow-gray-200 transition-all border-none relative overflow-hidden group"
+            >
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-emerald-400 opacity-20" />
+                {prospecting ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />}
+                Scan Prospects
+            </Button>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-8 bg-gray-50 p-1.5 rounded-[22px] max-w-fit border border-gray-100 shadow-sm">
+      <div className="flex gap-4 p-2 bg-white rounded-[32px] border border-gray-100 shadow-sm w-fit">
         {([
-          { id: "properties", label: "Registry", icon: Building2 },
-          { id: "calculator", label: "Margin Calibration", icon: Calculator },
+          { id: "properties", label: "Asset Registry", icon: Building2 },
+          { id: "calculator", label: "Margin Intelligence", icon: Calculator },
           { id: "contracts", label: "Legal Manifest", icon: FileText },
         ] as const).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${tab === t.id ? "bg-white text-gray-900 shadow-md border border-gray-100" : "text-gray-400 hover:text-gray-600"}`}>
-            <t.icon className={`w-3.5 h-3.5 ${tab === t.id ? "text-primary stroke-[3px]" : "stroke-[2.5px]"}`} />
+            className={`flex items-center gap-3 px-8 py-4 rounded-[24px] text-[11px] font-black uppercase tracking-[0.2em] transition-all relative ${tab === t.id ? "bg-gray-900 text-white shadow-xl" : "text-gray-400 hover:text-gray-600"}`}>
+            <t.icon className={`w-4 h-4 ${tab === t.id ? "text-indigo-400" : ""}`} />
             {t.label}
           </button>
         ))}
