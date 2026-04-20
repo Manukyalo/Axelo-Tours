@@ -5,22 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Users, Search, RefreshCw, CheckCircle2, XCircle, 
   Trash2, Edit2, Globe, Mail, User, Shield, 
-  Plus, ExternalLink, Key, AlertTriangle, Filter
+  Plus, ExternalLink, Key, AlertTriangle, Filter, Headphones, TrendingUp
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Partner } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter 
+} from "@/components/ui/dialog";
 import toast from "react-hot-toast";
 import { approvePartnerAction } from "@/lib/actions/partners";
 
@@ -407,29 +403,35 @@ export default function PartnersPage() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent className="rounded-[32px] border-0 shadow-2xl p-8">
-          <AlertDialogHeader>
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="rounded-[32px] border-0 shadow-2xl p-8">
+          <DialogHeader>
             <div className="w-16 h-16 bg-red-100 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
-            <AlertDialogTitle className="text-2xl font-black text-gray-900">Confirm Partner Deletion</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500 mt-2">
+            <DialogTitle className="text-2xl font-black text-gray-900">Confirm Partner Deletion</DialogTitle>
+            <DialogDescription className="text-gray-500 mt-2">
               Are you sure you want to remove <span className="font-black text-gray-900">"{partnerToDelete?.company_name}"</span>? 
               This will revoke their API access and remove them from the partnership registry. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="flex gap-4 mt-8">
-            <AlertDialogCancel className="flex-1 h-12 rounded-2xl border-gray-100 font-bold hover:bg-gray-50">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <Button 
+              variant="ghost"
+              onClick={() => setDeleteConfirmOpen(false)}
+              className="flex-1 h-12 rounded-2xl border border-gray-100 font-bold hover:bg-gray-50"
+            >
+              Cancel
+            </Button>
+            <Button 
               onClick={() => partnerToDelete && deletePartner(partnerToDelete.id)}
               className="flex-1 h-12 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-200"
             >
               Confirm Dismissal
-            </AlertDialogAction>
+            </Button>
           </div>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
