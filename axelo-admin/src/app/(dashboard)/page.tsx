@@ -146,106 +146,204 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-4 sm:p-8 space-y-8">
+    <div className="p-10 space-y-10">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome back — here's what's happening.</p>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tighter flex items-center gap-3">
+             <span className="w-2 h-10 bg-primary rounded-full hidden md:block" />
+             Operational Mission Control
+          </h1>
+          <p className="text-gray-500 text-lg mt-1 font-medium italic">
+            Command center for real-time safari operations and financial throughput.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href="/bookings/new" className="flex-1 sm:flex-none justify-center flex items-center gap-2 bg-primary text-white px-4 py-3 sm:py-2 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-            <Plus className="w-4 h-4" /> <span className="whitespace-nowrap">Add Booking</span>
+        <div className="flex items-center gap-3">
+          <Link href="/bookings" className="flex items-center h-12 gap-2 border border-gray-200 bg-white text-gray-700 px-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+            Operational Hub
           </Link>
-          <Link href="/packages" className="flex-1 sm:flex-none justify-center flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
-            <Plus className="w-4 h-4" /> <span className="whitespace-nowrap">Add Package</span>
-          </Link>
-          <Link href="/bookings" className="w-full sm:w-auto justify-center flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors">
-            View All Bookings
+          <Link href="/bookings/new" className="flex items-center h-12 gap-2 bg-gradient-to-r from-primary to-emerald-600 text-white px-6 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-emerald-100">
+            <Plus className="w-5 h-5 stroke-[3px]" /> Deploy Booking
           </Link>
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <StatCard label="Total Bookings" value={String(totalBookings)} icon={CalendarCheck} trend="+12%" color="bg-primary" />
-        <StatCard label="Revenue This Month" value={formatCurrency(thisMonthKES, "KES")} sub="KES" icon={TrendingUp} trend="+8%" color="bg-emerald-500" />
-        <StatCard label="Pending Bookings" value={String(pendingCount)} sub="Requires action" icon={Clock} color="bg-amber-500" />
-        <StatCard label="Active Packages" value={String(activePackages)} sub={`of ${packages.length} total`} icon={Package} color="bg-blue-500" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: "Active Revenue Pipeline", value: formatCurrency(thisMonthKES, "KES"), icon: TrendingUp, color: "emerald", sub: "30-Day Velocity", trend: "+8.4%" },
+          { label: "Booking Transmissions", value: String(totalBookings), icon: CalendarCheck, color: "primary", sub: "Total Life Cycle", trend: "+12.1%" },
+          { label: "Critical Actions Required", value: String(pendingCount), icon: Clock, color: "amber", sub: "Pending Manifests", trend: "Attention Needed" },
+          { label: "Available Inventory", value: String(activePackages), icon: Package, color: "indigo", sub: "Live Experiences", trend: `${packages.length} Total` },
+        ].map(({ label, value, icon: Icon, color, sub, trend }) => (
+          <div key={label} className="group bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all hover:-translate-y-1">
+             <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 rounded-2xl bg-${color === 'primary' ? 'emerald' : color}-50 flex items-center justify-center text-${color === 'primary' ? 'emerald' : color}-600 group-hover:scale-110 transition-all shadow-sm`}>
+                   <Icon className="w-6 h-6" />
+                </div>
+                <div className="text-right">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+                   {trend && (
+                     <span className={`text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full ${trend.includes('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                        {trend}
+                     </span>
+                   )}
+                </div>
+             </div>
+             <p className="text-3xl font-black text-gray-900 tracking-tighter mb-1">
+                {value}
+             </p>
+             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{sub}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Line Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden">
-          <h2 className="text-base font-bold text-gray-900 mb-6">Revenue — Last 30 Days (KES)</h2>
-          <ResponsiveContainer width="100%" height={220}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white rounded-[32px] border border-gray-100 shadow-sm p-8 overflow-hidden hover:shadow-xl hover:shadow-gray-100 transition-all">
+          <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Financial Throughput</h2>
+                <h3 className="text-xl font-black text-gray-900 tracking-tighter">Gross Revenue velocity (KES)</h3>
+              </div>
+              <div className="bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
+                  <span className="text-[10px] font-black text-gray-500 uppercase">Last 30 Days Cycle</span>
+              </div>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
             <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} interval={4} />
-              <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+              <XAxis dataKey="day" hide />
+              <YAxis hide />
               <Tooltip
-                formatter={(v) => [formatCurrency(Number(v ?? 0), "KES"), "Revenue"]}
-                contentStyle={{ borderRadius: 12, border: "1px solid #e5e7eb", fontSize: 12 }}
+                cursor={{ stroke: '#10b981', strokeWidth: 1 }}
+                content={({ active, payload }) => {
+                   if (active && payload && payload.length) {
+                     return (
+                       <div className="bg-gray-900 text-white p-3 rounded-2xl shadow-2xl border border-gray-800">
+                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{payload[0].payload.day}</p>
+                         <p className="text-sm font-black tracking-tighter">{formatCurrency(payload[0].value as number, "KES")}</p>
+                       </div>
+                     );
+                   }
+                   return null;
+                }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#1A6B3A" strokeWidth={2.5} dot={false} />
+              <defs>
+                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={4} dot={false} activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981 shadow-lg' }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         {/* Donut Chart */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-base font-bold text-gray-900 mb-4">Bookings by Status</h2>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:shadow-gray-100 transition-all">
+          <div className="mb-6">
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Operational Pulse</h2>
+              <h3 className="text-xl font-black text-gray-900 tracking-tighter">Status Distribution</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
             <PieChart>
-              <Pie data={statusCounts} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
+              <Pie data={statusCounts} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={8} dataKey="value" stroke="none">
                 {statusCounts.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
+                  <Cell key={i} fill={entry.color} cornerRadius={12} />
                 ))}
               </Pie>
-              <Legend
-                iconType="circle"
-                iconSize={8}
-                formatter={(v) => <span className="text-xs text-gray-600 font-medium">{v}</span>}
+              <Tooltip 
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="bg-gray-900 text-white p-3 rounded-2xl shadow-2xl border border-gray-800">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{payload[0].name}</p>
+                        <p className="text-sm font-black tracking-tighter">{payload[0].value} Units</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e5e7eb", fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+              {statusCounts.map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{s.name}: {s.value}</span>
+                </div>
+              ))}
+          </div>
         </div>
       </div>
 
-      {/* Recent Bookings Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-base font-bold text-gray-900">Recent Bookings</h2>
-          <Link href="/bookings" className="text-sm text-primary font-bold hover:underline">View all →</Link>
+      <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-gray-100 transition-all">
+        <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          <div>
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Operational Queue</h2>
+              <h3 className="text-xl font-black text-gray-900 tracking-tighter">Synchronized Manifest</h3>
+          </div>
+          <Link href="/bookings" className="h-10 px-6 flex items-center bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-all shadow-sm">
+            Access Full Ledger
+          </Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                {["Booking ID", "Client", "Package", "Travel Date", "Amount", "Status", "Payment"].map(h => (
-                  <th key={h} className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{h}</th>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-white text-[10px] uppercase text-gray-400 font-black tracking-widest border-b border-gray-100">
+              <tr>
+                {["Manifest ID", "Identity Hub", "Service Line", "Window", "Settlement", "Audit Status"].map(h => (
+                  <th key={h} className="px-8 py-4 font-bold tracking-widest uppercase">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {recent.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No bookings yet.</td>
+                  <td colSpan={6} className="px-8 py-16 text-center text-gray-400 font-black uppercase text-xs tracking-widest">Awaiting system transmissions...</td>
                 </tr>
               ) : recent.map(b => (
-                <tr key={b.id} className="hover:bg-gray-50/70 transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs text-gray-500">{b.id.split("-")[0].toUpperCase()}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">{b.clients?.full_name ?? "—"}</td>
-                  <td className="px-6 py-4 text-gray-600">{b.packages?.name ?? "—"}</td>
-                  <td className="px-6 py-4 text-gray-600">{format(new Date(b.travel_date), "dd MMM yyyy")}</td>
-                  <td className="px-6 py-4 font-bold text-gray-900">{formatCurrency(b.total_amount, b.currency)}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${STATUS_BG[b.status]}`}>{b.status}</span>
+                <tr key={b.id} className="group hover:bg-gray-50/50 transition-all border-b border-gray-50">
+                  <td className="px-8 py-6">
+                    <span className="font-mono text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                      {b.id.split("-")[0].toUpperCase()}
+                    </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${PAYMENT_BG[b.payment_status]}`}>{b.payment_status}</span>
+                  <td className="px-8 py-6">
+                    <div className="flex flex-col">
+                      <span className="font-black text-gray-900 text-[13px] tracking-tighter">{b.clients?.full_name ?? "External Identity"}</span>
+                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">{b.clients?.email}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
+                       <span className="text-[12px] font-bold text-gray-600 leading-tight tracking-tight uppercase">{b.packages?.name ?? "Custom Module"}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-gray-900 tracking-tighter uppercase">{format(new Date(b.travel_date), "dd MMM yyyy")}</span>
+                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Deployment Date</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 font-black text-gray-900 text-[13px] tracking-tighter">
+                    {formatCurrency(b.total_amount, b.currency)}
+                  </td>
+                  <td className="px-8 py-6">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                        b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        b.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                        b.status === 'completed' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                        'bg-red-50 text-red-600 border-red-100'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        b.status === 'confirmed' ? 'bg-emerald-600' :
+                        b.status === 'pending' ? 'bg-amber-600' :
+                        b.status === 'completed' ? 'bg-blue-600' :
+                        'bg-red-600'
+                      }`} />
+                      {b.status}
+                    </span>
                   </td>
                 </tr>
               ))}

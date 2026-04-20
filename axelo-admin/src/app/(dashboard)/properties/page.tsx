@@ -17,10 +17,10 @@ type Season = "low" | "shoulder" | "high" | "peak";
 
 const SEASONS: Season[] = ["low", "shoulder", "high", "peak"];
 const SEASON_COLORS: Record<Season, string> = {
-  low:      "bg-blue-100 text-blue-700",
-  shoulder: "bg-yellow-100 text-yellow-800",
-  high:     "bg-orange-100 text-orange-700",
-  peak:     "bg-red-100 text-red-700",
+  low:      "bg-indigo-50 text-indigo-600 border-indigo-100",
+  shoulder: "bg-amber-50 text-amber-600 border-amber-100",
+  high:     "bg-emerald-50 text-emerald-600 border-emerald-100",
+  peak:     "bg-rose-50 text-rose-600 border-rose-100",
 };
 const USD_KES = 129; // approximate
 
@@ -138,28 +138,28 @@ export default function PropertiesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-primary" />
-            Property & Contract Manager
+          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
+            <span className="w-2 h-8 bg-primary rounded-full hidden md:block" />
+            Asset Logistics Hub
           </h1>
-          <p className="text-gray-500 mt-2">Manage lodge contracts, net rates, and markup calculations.</p>
+          <p className="text-gray-500 mt-2 font-bold italic">Manage lodge contracts, neural net rates, and margin calibrations.</p>
         </div>
-        <Button onClick={findProspects} disabled={prospecting} variant="outline" className="gap-2 rounded-xl h-12 shadow-sm bg-white border-gray-200">
-          {prospecting ? <RefreshCw className="w-4 h-4 animate-spin text-primary" /> : <Search className="w-4 h-4 text-primary" />}
-          Find Lodge Prospects
+        <Button onClick={findProspects} disabled={prospecting} variant="outline" className="gap-2 bg-white border-gray-200 text-gray-600 hover:bg-gray-50 font-black uppercase tracking-widest text-[10px] h-12 px-6 rounded-2xl transition-all shadow-sm">
+          {prospecting ? <RefreshCw className="w-4 h-4 animate-spin text-primary" /> : <Search className="w-4 h-4 text-primary stroke-[3px]" />}
+          Scan Prospects
         </Button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-8 bg-gray-100 p-1.5 rounded-2xl max-w-fit">
+      <div className="flex gap-2 mb-8 bg-gray-50 p-1.5 rounded-[22px] max-w-fit border border-gray-100 shadow-sm">
         {([
-          { id: "properties", label: "Properties", icon: Building2 },
-          { id: "calculator", label: "Rate Calculator", icon: Calculator },
-          { id: "contracts", label: "Contracts", icon: FileText },
+          { id: "properties", label: "Registry", icon: Building2 },
+          { id: "calculator", label: "Margin Calibration", icon: Calculator },
+          { id: "contracts", label: "Legal Manifest", icon: FileText },
         ] as const).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === t.id ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
-            <t.icon className={`w-4 h-4 ${tab === t.id ? "text-primary" : ""}`} />
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${tab === t.id ? "bg-white text-gray-900 shadow-md border border-gray-100" : "text-gray-400 hover:text-gray-600"}`}>
+            <t.icon className={`w-3.5 h-3.5 ${tab === t.id ? "text-primary stroke-[3px]" : "stroke-[2.5px]"}`} />
             {t.label}
           </button>
         ))}
@@ -175,23 +175,26 @@ export default function PropertiesPage() {
             {/* Left: Property List */}
             <div className="lg:col-span-2 space-y-3">
               {loading ? (
-                <div className="text-center py-20 text-gray-400">Loading properties...</div>
+                <div className="text-center py-20 text-gray-400 font-black uppercase tracking-widest text-xs">Calibrating Registry...</div>
               ) : properties.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
-                  <Building2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No properties yet. Use "Find Lodge Prospects" to add some.</p>
+                <div className="bg-white rounded-[32px] border border-gray-100 p-10 text-center shadow-sm">
+                  <Building2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                  <p className="text-gray-400 font-bold uppercase tracking-tighter italic">No properties indexed. Initiate Scan.</p>
                 </div>
               ) : properties.map(p => {
                 const contract = contractForProperty(p.id);
                 const isSelected = selectedProperty?.id === p.id;
                 return (
                   <button key={p.id} onClick={() => setSelectedProperty(p)}
-                    className={`w-full text-left bg-white rounded-2xl border p-4 shadow-sm transition-all hover:shadow-md ${isSelected ? "border-primary ring-2 ring-primary/20" : "border-gray-100"}`}>
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-bold text-gray-900 text-sm truncate pr-2">{p.name}</h3>
+                    className={`w-full text-left bg-white rounded-2xl border p-5 shadow-sm transition-all hover:shadow-xl hover:shadow-gray-100 group ${isSelected ? "border-primary ring-4 ring-primary/5" : "border-gray-50"}`}>
+                    <div className="flex justify-between items-start mb-1.5">
+                      <h3 className={`font-black text-[15px] tracking-tighter uppercase italic transition-colors ${isSelected ? "text-primary" : "text-gray-900 group-hover:text-primary"}`}>{p.name}</h3>
                       {contractBadge(contract)}
                     </div>
-                    <p className="text-xs text-gray-500">{p.destination} · {p.category}</p>
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                        <MapPin className="h-3 w-3" />
+                        {p.destination} · {p.category}
+                    </div>
                   </button>
                 );
               })}
@@ -200,10 +203,12 @@ export default function PropertiesPage() {
             {/* Right: Detail Panel */}
             <div className="lg:col-span-3">
               {!selectedProperty ? (
-                <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center shadow-sm h-full flex flex-col items-center justify-center">
-                  <Building2 className="w-12 h-12 text-gray-200 mb-4" />
-                  <h3 className="text-lg font-bold text-gray-400">Select a Property</h3>
-                  <p className="text-sm text-gray-400 mt-1">Click a lodge from the list to view details, rates, and contract.</p>
+                <div className="bg-white rounded-[32px] border border-gray-100 p-16 text-center shadow-xl shadow-gray-100 h-full flex flex-col items-center justify-center">
+                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                    <Building2 className="w-10 h-10 text-gray-200" />
+                  </div>
+                  <h3 className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">Select Asset</h3>
+                  <p className="text-sm font-bold text-gray-400 mt-2 max-w-[280px]">Select a lodge from the manifest to view neural net rates and legal contracts.</p>
                 </div>
               ) : (
                 <PropertyDetail
@@ -370,10 +375,10 @@ export default function PropertiesPage() {
 
 function StatCard({ label, value, sub, color, textColor }: any) {
   return (
-    <div className={`${color} rounded-2xl p-5`}>
-      <p className="text-xs text-gray-400 font-bold uppercase mb-1">{label}</p>
-      <p className={`text-2xl font-black ${textColor}`}>{value}</p>
-      <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+    <div className={`${color} rounded-[24px] p-6 border border-gray-100 shadow-sm`}>
+      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</p>
+      <p className={`text-2xl font-black tracking-tighter italic ${textColor}`}>{value}</p>
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">{sub}</p>
     </div>
   );
 }
@@ -389,16 +394,18 @@ function PropertyDetail({ property, contract, rates, onUpload, onRenew, uploadin
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7 space-y-7">
+    <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-100 p-8 space-y-8">
       {/* Header */}
       <div className="flex justify-between items-start">
-        <div>
-          <h2 className="font-bold text-gray-900 text-xl">{property.name}</h2>
-          <p className="text-sm text-gray-500">{property.destination} · {property.category}</p>
+        <div className="space-y-1">
+          <h2 className="font-black text-gray-900 text-2xl tracking-[ -0.05em] uppercase italic">{property.name}</h2>
+          <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            <MapPin className="h-3 w-3" /> {property.destination} · {property.category}
+          </div>
           {property.website && (
             <a href={property.website} target="_blank" rel="noreferrer"
-              className="text-xs text-primary flex items-center gap-1 mt-1 hover:underline">
-              <ExternalLink className="w-3 h-3" />{property.website}
+              className="text-[10px] text-primary flex items-center gap-1.5 font-black uppercase tracking-wider hover:opacity-70 transition-all">
+              <ExternalLink className="w-3 h-3 stroke-[3px]" /> Asset Intelligence Portal
             </a>
           )}
         </div>
@@ -406,51 +413,57 @@ function PropertyDetail({ property, contract, rates, onUpload, onRenew, uploadin
       </div>
 
       {/* Contact */}
-      <div className="bg-gray-50 rounded-xl p-4 text-sm grid grid-cols-2 gap-3">
+      <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100 text-sm grid grid-cols-2 gap-6 shadow-inner">
         <div>
-          <p className="text-xs text-gray-400 font-bold uppercase mb-0.5">Contact Name</p>
-          <p className="text-gray-800 font-medium">{property.contact_name || "—"}</p>
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+            <User className="w-3 h-3" /> Liasion Node
+          </p>
+          <p className="text-gray-900 font-black text-xs uppercase tracking-tight">{property.contact_name || "NOT ASSIGNED"}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-400 font-bold uppercase mb-0.5">Contact Email</p>
-          <p className="text-gray-800 font-medium truncate">{property.contact_email || "—"}</p>
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+            <Mail className="w-3 h-3" /> Encrypted Channel
+          </p>
+          <p className="text-gray-900 font-black text-xs uppercase tracking-tight truncate lowercase">{property.contact_email || "PENDING_HANDSHAKE"}</p>
         </div>
       </div>
 
       {/* Rate Card */}
       <div>
-        <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2 mb-3">
-          <DollarSign className="w-4 h-4 text-primary" /> Net Rate Card (USD)
+        <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 mb-4">
+          <DollarSign className="w-3.5 h-3.5 text-primary stroke-[3px]" /> Neural Net Rate Card (USD)
         </h3>
         {Object.keys(roomGroups).length === 0 ? (
-          <p className="text-xs text-gray-400 bg-gray-50 rounded-xl p-4">No rates loaded yet.</p>
+          <div className="p-8 text-center bg-gray-50 border border-gray-100 rounded-[24px]">
+             <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">Inventory nodes offline. Sync Rates.</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-gray-100">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-gray-50">
+          <div className="overflow-x-auto rounded-[24px] border border-gray-100 shadow-sm">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50/50">
                 <tr>
-                  <th className="px-4 py-3 font-bold text-gray-500 uppercase">Room Type</th>
+                  <th className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Asset Spec</th>
                   {["low", "shoulder", "high", "peak"].map(s => (
-                    <th key={s} className="px-4 py-3 font-bold text-gray-500 uppercase">{s}</th>
+                    <th key={s} className="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">{s}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {Object.entries(roomGroups).map(([room, rts]) => (
-                  <tr key={room} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-semibold text-gray-800">{room}</td>
+                  <tr key={room} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-5 font-black text-gray-900 text-[12px] tracking-tight uppercase italic">{room}</td>
                     {(["low", "shoulder", "high", "peak"] as Season[]).map(s => {
                       const rate = rts.find((r: any) => r.season === s);
                       const net = rate?.net_rate_usd;
                       const sell = net ? net * (1 + calcMarkup / 100) : null;
                       return (
-                        <td key={s} className="px-4 py-3">
+                        <td key={s} className="px-6 py-5">
                           {net ? (
-                            <div>
-                              <p className="text-gray-400 line-through text-[10px]">${net}</p>
-                              <p className="font-bold text-gray-900">${sell!.toFixed(0)}</p>
+                            <div className="space-y-0.5">
+                              <p className="text-gray-300 font-bold text-[9px] uppercase tracking-tighter italic">NET: ${net}</p>
+                              <p className="font-black text-gray-900 text-[13px] tracking-tighter italic">${sell!.toFixed(0)}</p>
                             </div>
-                          ) : <span className="text-gray-300">—</span>}
+                          ) : <span className="text-gray-200 font-black">—</span>}
                         </td>
                       );
                     })}
@@ -462,12 +475,16 @@ function PropertyDetail({ property, contract, rates, onUpload, onRenew, uploadin
         )}
 
         {/* Markup Slider */}
-        <div className="mt-3 bg-primary/5 rounded-xl p-3 flex items-center gap-4">
-          <TrendingUp className="w-4 h-4 text-primary shrink-0" />
-          <span className="text-xs font-bold text-primary">Markup</span>
+        <div className="mt-5 bg-indigo-50/30 rounded-[20px] p-5 border border-indigo-100 flex items-center gap-6 group">
+          <div className="flex items-center gap-2 shrink-0">
+             <TrendingUp className="w-4 h-4 text-indigo-600 stroke-[3px]" />
+             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Yield Optimization</span>
+          </div>
           <input type="range" min={5} max={80} value={calcMarkup}
-            onChange={e => setCalcMarkup(Number(e.target.value))} className="flex-1 accent-primary" />
-          <span className="text-sm font-black text-primary w-10 text-right">{calcMarkup}%</span>
+            onChange={e => setCalcMarkup(Number(e.target.value))} className="flex-1 accent-indigo-600 cursor-pointer h-1.5" />
+          <div className="w-16 h-10 bg-white border border-indigo-100 rounded-xl flex items-center justify-center font-black text-indigo-600 italic tracking-tighter shadow-sm text-sm">
+            {calcMarkup}%
+          </div>
         </div>
       </div>
 

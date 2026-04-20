@@ -137,47 +137,47 @@ export default function PartnersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-            <Users className="h-8 w-8 text-primary" />
-            Enterprise Partners
+          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
+            <span className="w-2 h-8 bg-primary rounded-full hidden md:block" />
+            B2B Relationship Hub
           </h1>
-          <p className="text-gray-500 mt-2">
-            Manage B2B relationships, approval workflows, and API access.
+          <p className="text-gray-500 mt-2 font-bold italic">
+            Manage global partnerships, neural approval workflows, and secure API access nodes.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[22px] border border-gray-100 shadow-sm">
           <button 
             onClick={() => setFilterStatus("all")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterStatus === "all" ? "bg-gray-900 text-white shadow-lg" : "text-gray-500 hover:bg-gray-50"}`}
+            className={`px-5 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "all" ? "bg-gray-900 text-white shadow-xl" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
           >All</button>
           <button 
             onClick={() => setFilterStatus("pending")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterStatus === "pending" ? "bg-blue-600 text-white shadow-lg" : "text-gray-500 hover:bg-gray-50"}`}
+            className={`px-5 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "pending" ? "bg-indigo-600 text-white shadow-xl" : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50"}`}
           >Pending</button>
           <button 
             onClick={() => setFilterStatus("approved")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterStatus === "approved" ? "bg-emerald-600 text-white shadow-lg" : "text-gray-500 hover:bg-gray-50"}`}
+            className={`px-5 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === "approved" ? "bg-emerald-600 text-white shadow-xl" : "text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
           >Approved</button>
         </div>
       </div>
 
       {/* Main Grid/Table */}
       <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex flex-wrap items-center justify-between gap-4">
+        <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input 
               value={search} onChange={e => setSearch(e.target.value)} 
-              placeholder="Search by company, contact or email..."
-              className="w-full pl-12 pr-4 h-12 border border-gray-100 rounded-2xl text-sm bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-sm" 
+              placeholder="Search partner network..."
+              className="w-full pl-14 pr-6 h-14 border border-gray-100 rounded-2xl text-sm bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-bold tracking-tight shadow-inner" 
             />
           </div>
           <button 
             onClick={fetchPartners}
-            className="p-3 text-gray-400 hover:text-primary transition-colors bg-white border border-gray-100 rounded-xl"
+            className="w-14 h-14 flex items-center justify-center text-gray-400 hover:text-primary transition-all bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md"
             title="Refresh list"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin text-primary" : ""}`} />
+            <RefreshCw className={`w-5 h-5 stroke-[3px] ${loading ? "animate-spin text-primary" : ""}`} />
           </button>
         </div>
 
@@ -195,105 +195,97 @@ export default function PartnersPage() {
             <tbody className="divide-y divide-gray-50">
               {loading && partners.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center text-gray-400">
-                    <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 opacity-20" />
-                    <p className="font-medium">Loading partners...</p>
+                  <td colSpan={5} className="py-24 text-center">
+                    <RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-primary opacity-20" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Syncing Partnership Registry...</p>
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center text-gray-400 font-medium">
-                    No partners found matching your criteria.
+                  <td colSpan={5} className="py-24 text-center font-black uppercase tracking-widest text-gray-400 italic">
+                    No partner nodes detected in current manifest.
                   </td>
                 </tr>
               ) : filtered.map(partner => (
-                <tr key={partner.id} className="group hover:bg-gray-50/50 transition-colors">
+                <tr key={partner.id} className="group hover:bg-gray-50/50 transition-all">
                   <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center font-black text-primary text-xl shadow-inner">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 bg-gray-900 flex items-center justify-center font-black text-white text-xl rounded-2xl shadow-xl shadow-gray-200 group-hover:scale-105 transition-all italic">
                         {partner.company_name[0]}
                       </div>
                       <div>
-                        <h3 className="font-black text-gray-900 group-hover:text-primary transition-colors">{partner.company_name}</h3>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-[10px] font-medium text-gray-500">
-                          <span className="flex items-center gap-1"><Mail className="w-3 h-3 text-gray-400" /> {partner.email}</span>
-                          {partner.phone && <span className="flex items-center gap-1"><Headphones className="w-3 h-3 text-gray-400" /> {partner.phone}</span>}
-                          {partner.website && (
-                             <a href={partner.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary transition-colors">
-                                <Globe className="w-3 h-3 text-gray-400" /> Website
-                             </a>
-                          )}
+                        <h3 className="font-black text-gray-900 text-[15px] tracking-tighter uppercase italic group-hover:text-primary transition-colors">{partner.company_name}</h3>
+                        <div className="flex flex-wrap items-center gap-4 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          <span className="flex items-center gap-1.5 lowercase hover:text-primary transition-colors"><Mail className="w-3.5 h-3.5" /> {partner.email}</span>
+                          {partner.phone && <span className="flex items-center gap-1.5"><Headphones className="w-3.5 h-3.5 italic" /> {partner.phone}</span>}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-xs font-bold text-gray-900">
-                        <Globe className="w-3 h-3 text-gray-400" />
-                        {partner.country || "Not specified"}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-[11px] font-black text-gray-700 uppercase tracking-tight">
+                        <Globe className="h-3.5 w-3.5 text-indigo-400 stroke-[2.5px]" />
+                        {partner.country || "GLOBAL_NODE"}
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] font-medium text-gray-500">
-                        <TrendingUp className="w-3 h-3" />
-                        {partner.annual_pax ? `${partner.annual_pax.toLocaleString()} pax/year` : "Volume N/A"}
+                      <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">
+                        <TrendingUp className="w-3 h-3 text-emerald-400" />
+                        {partner.annual_pax ? `${partner.annual_pax.toLocaleString()} PAX/YR` : "VOLUME_PENDING"}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-6">
-                    <div className="space-y-1.5 text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 uppercase tracking-tighter w-12 underline decoration-gray-100">Type</span>
-                        <span className="text-gray-900 capitalize">{partner.partner_type?.replace("_", " ") || "n/a"}</span>
+                  <td className="px-6 py-6 transition-all group-hover:px-8">
+                    <div className="space-y-2 text-[10px] font-black uppercase tracking-widest">
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-300 w-12 underline decoration-gray-100">Spec</span>
+                        <span className="text-gray-900 italic tracking-tighter">{partner.partner_type?.replace("_", " ") || "GENERIC"}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 uppercase tracking-tighter w-12 underline decoration-gray-100">Tier</span>
-                        <span className={`px-2 py-0.5 rounded-md border ${getTierColor(partner.tier)} uppercase text-[9px] tracking-widest`}>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-300 w-12 underline decoration-gray-100">Grade</span>
+                        <span className={`px-2.5 py-1 rounded-full border ${getTierColor(partner.tier)} text-[8px] italic`}>
                           {partner.tier}
                         </span>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-6">
-                    <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${getStatusColor(partner.status)}`}>
+                    <span className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                      partner.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                      partner.status === 'pending' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                      'bg-rose-50 text-rose-600 border-rose-100'
+                    }`}>
                       {partner.status}
                     </span>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
                       {partner.status === "pending" && (
                         <>
                           <button 
                             onClick={() => updatePartner(partner.id, { status: "approved" })}
-                            className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors shadow-sm"
-                            title="Approve Partner"
+                            className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 shadow-sm"
+                            title="Authorize Node"
                           >
-                            <CheckCircle2 className="w-5 h-5" />
-                          </button>
-                          <button 
-                            onClick={() => updatePartner(partner.id, { status: "rejected" })}
-                            className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors shadow-sm"
-                            title="Reject Partner"
-                          >
-                            <XCircle className="w-5 h-5" />
+                            <CheckCircle2 className="w-5 h-5 stroke-[2.5px]" />
                           </button>
                         </>
                       )}
                       <button 
                         onClick={() => setEditingPartner(partner)}
-                        className="p-2.5 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary/20 transition-all shadow-sm"
-                        title="Edit Settings"
+                        className="p-3 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary/20 hover:scale-110 transition-all shadow-sm"
+                        title="Calibrate Assets"
                       >
-                        <Edit2 className="w-5 h-5" />
+                        <Edit2 className="w-5 h-5 stroke-[2.5px]" />
                       </button>
                       <button 
                         onClick={() => {
                           setPartnerToDelete(partner);
                           setDeleteConfirmOpen(true);
                         }}
-                        className="p-2.5 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm ml-2"
-                        title="Remove Partner"
+                        className="p-3 rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100 hover:scale-110 transition-all shadow-sm"
+                        title="Decommission"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-5 h-5 stroke-[2.5px]" />
                       </button>
                     </div>
                   </td>

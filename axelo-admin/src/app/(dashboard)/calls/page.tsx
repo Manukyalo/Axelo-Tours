@@ -85,91 +85,79 @@ export default function CallsDashboard() {
     <div className="p-8 pb-32 max-w-7xl mx-auto min-h-screen">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <PhoneCall className="h-8 w-8 text-primary" />
-            Call Intelligence
+          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tighter">
+            <span className="w-2 h-8 bg-indigo-600 rounded-full hidden md:block" />
+            Voice Intelligence Manifest
           </h1>
-          <p className="text-gray-500 mt-2">
-            AI-driven phone reception powered by Zara. Review transcripts, booking intent, and automated follow-ups.
+          <p className="text-gray-500 mt-2 font-bold italic">
+            AI-driven reception audit powered by Zara Agent. Review neural transcripts and intent scoring.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> Zara Agent: Online</span>
+        <div className="flex items-center gap-6">
+            <div className="flex flex-col items-end">
+               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Agent Status</span>
+               <span className="text-sm font-black text-emerald-600 flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> 
+                 Zara: Active Sync
+               </span>
+            </div>
+            <button onClick={fetchCallLogs} className="w-12 h-12 flex items-center justify-center rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-all shadow-sm">
+                <RefreshCw className={`w-5 h-5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+            </button>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-            <PhoneCall className="w-24 h-24 text-primary" />
+        {[
+          { label: "Transmission Volume", value: String(todayCalls), icon: PhoneCall, color: "indigo", sub: "Daily Hits", trend: "Normal Load" },
+          { label: "Booking Intent Score", value: `${avgIntent}/10`, icon: TrendingUp, color: "amber", sub: "Neural Accuracy", trend: "High Lead Potential" },
+          { label: "Dispatch Velocity", value: String(leadsGenerated), icon: Zap, color: "emerald", sub: "Automated Follow-ups", trend: "SMS Pipeline Active" },
+        ].map(({ label, value, icon: Icon, color, sub, trend }) => (
+          <div key={label} className="group bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-100 transition-all hover:-translate-y-1">
+             <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 rounded-2xl bg-${color}-50 flex items-center justify-center text-${color}-600 group-hover:scale-110 transition-all shadow-sm`}>
+                   <Icon className="w-6 h-6" />
+                </div>
+                <div className="text-right">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+                   <span className={`text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-${color}-50 text-${color}-600`}>
+                      {trend}
+                   </span>
+                </div>
+             </div>
+             <p className="text-3xl font-black text-gray-900 tracking-tighter">
+                {value}
+             </p>
+             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter mt-1">{sub}</p>
           </div>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <PhoneCall className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Calls Today</h3>
-          </div>
-          <p className="text-4xl font-bold text-gray-900">{todayCalls}</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-            <TrendingUp className="w-24 h-24 text-amber-500" />
-          </div>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-              <BarChart3 className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Avg Intent Score</h3>
-          </div>
-          <p className="text-4xl font-bold text-gray-900">{avgIntent}<span className="text-sm font-medium text-gray-400 ml-1">/ 10</span></p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-            <Zap className="w-24 h-24 text-green-500" />
-          </div>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Leads Generated</h3>
-          </div>
-          <p className="text-4xl font-bold text-gray-900">{leadsGenerated}</p>
-          <p className="text-sm text-gray-500 mt-2">Automated SMS dispatched</p>
-        </div>
+        ))}
       </div>
 
       {/* Table Section */}
-      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-gray-900">Call Log Directory</h2>
+      <div className="bg-white border border-gray-100 rounded-[32px] shadow-sm overflow-hidden mb-12">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div>
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Communication Queue</h2>
+              <h3 className="text-xl font-black text-gray-900 tracking-tighter">Transmission Registry</h3>
+          </div>
           
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-gray-500">Min Intent:</span>
-            <select 
-              value={filterScore} 
-              onChange={(e) => setFilterScore(Number(e.target.value))}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value={0}>All Calls</option>
-              <option value={5}>Medium+ (5+)</option>
-              <option value={8}>High Intent (8+)</option>
-            </select>
+          <div className="flex items-center gap-3">
+             <div className="flex bg-white p-1 rounded-xl border border-gray-200">
+                <button onClick={() => setFilterScore(0)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterScore === 0 ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>All Signals</button>
+                <button onClick={() => setFilterScore(5)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterScore === 5 ? 'bg-amber-500 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>Qualified</button>
+                <button onClick={() => setFilterScore(8)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterScore === 8 ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>High Velocity</button>
+             </div>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50/50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
+            <thead className="bg-white text-[10px] uppercase text-gray-400 font-black tracking-widest border-b border-gray-100">
               <tr>
-                <th className="px-6 py-4">Date / Time</th>
-                <th className="px-6 py-4">Caller</th>
-                <th className="px-6 py-4">Duration</th>
-                <th className="px-6 py-4">Intent</th>
-                <th className="px-6 py-4">Package Interest</th>
-                <th className="px-6 py-4 text-center">SMS Sent</th>
+                {["Neural Timestamp", "Caller Identity", "Duration", "Intent Match", "Interest Node", "Automated Dispatch"].map(h => (
+                  <th key={h} className="px-8 py-4 font-bold tracking-widest uppercase">{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -186,35 +174,56 @@ export default function CallsDashboard() {
                   <tr 
                     key={log.id} 
                     onClick={() => setSelectedCall(log)}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="group hover:bg-gray-50/50 transition-all cursor-pointer"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{new Date(log.created_at).toLocaleDateString()}</div>
-                      <div className="text-xs text-gray-400">{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900 flex items-center gap-2">
-                        {log.caller_name}
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col">
+                        <span className="font-black text-gray-900 text-[11px] tracking-tighter uppercase">{new Date(log.created_at).toLocaleDateString()}</span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <div className="text-xs text-gray-500">{log.caller_phone}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap flex items-center gap-1.5 mt-2">
-                       <Clock className="w-3.5 h-3.5 text-gray-400" />
-                       {formatDuration(log.duration_seconds)}
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col">
+                        <span className="font-black text-gray-900 text-[13px] tracking-tighter group-hover:text-indigo-600 transition-colors uppercase">{log.caller_name || "Unknown Identity"}</span>
+                        <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">{log.caller_phone}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${getIntentBadge(log.booking_intent_score)}`}>
-                        {log.booking_intent_score} / 10
+                    <td className="px-8 py-6">
+                       <span className="flex items-center gap-1.5 font-bold text-gray-500 text-[11px] uppercase tracking-tight">
+                          <Clock className="w-3.5 h-3.5" />
+                          {formatDuration(log.duration_seconds)}
+                       </span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${
+                        log.booking_intent_score >= 8 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        log.booking_intent_score >= 5 ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                        'bg-red-50 text-red-600 border-red-100'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          log.booking_intent_score >= 8 ? 'bg-emerald-500' :
+                          log.booking_intent_score >= 5 ? 'bg-amber-500' :
+                          'bg-red-500'
+                        }`} />
+                        Intent: {log.booking_intent_score}/10
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-800">
-                      {log.interested_package || <span className="text-gray-400 font-normal">None detected</span>}
+                    <td className="px-8 py-6">
+                      <span className="text-[11px] font-black text-gray-800 uppercase tracking-tighter">
+                        {log.interested_package || <span className="text-gray-300">Generic Query</span>}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-8 py-6">
                       {log.sms_sent ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" />
+                        <div className="flex items-center gap-2 text-emerald-600">
+                           <CheckCircle2 className="w-5 h-5 stroke-[3px]" />
+                           <span className="text-[9px] font-black uppercase tracking-[0.1em]">Dispatch Success</span>
+                        </div>
                       ) : (
-                        <span className="w-2 h-2 rounded-full bg-gray-300 mx-auto block"></span>
+                        <div className="flex items-center gap-2 text-gray-300">
+                           <div className="w-2 h-2 rounded-full bg-gray-200" />
+                           <span className="text-[9px] font-black uppercase tracking-[0.1em]">No Action Taken</span>
+                        </div>
                       )}
                     </td>
                   </tr>

@@ -234,64 +234,66 @@ export default function BlogList() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
+          <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input 
                         value={search} onChange={e => setSearch(e.target.value)} 
                         placeholder="Search articles..."
-                        className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30" 
+                        className="w-full pl-11 pr-4 h-12 border border-gray-100 rounded-2xl text-sm bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-bold tracking-tight shadow-inner" 
                     />
                </div>
           </div>
           <div className="overflow-x-auto">
              <table className="w-full text-sm text-left">
-                <thead className="bg-white text-xs uppercase text-gray-400 font-bold border-b border-gray-100">
+                <thead className="bg-white text-[10px] uppercase text-gray-400 font-black tracking-widest border-b border-gray-100">
                     <tr>
-                        <th className="px-6 py-4">Article</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Read Time</th>
-                        <th className="px-6 py-4">Dates</th>
-                        <th className="px-6 py-4 text-right">Actions</th>
+                        <th className="px-8 py-5">Content Asset</th>
+                        <th className="px-8 py-5">Node Status</th>
+                        <th className="px-8 py-5">Consumption</th>
+                        <th className="px-8 py-5">Timeline</th>
+                        <th className="px-8 py-5 text-right">Sequence</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 text-gray-600">
                     {loading ? (
-                        <tr><td colSpan={5} className="p-8 text-center"><RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto"/></td></tr>
+                        <tr><td colSpan={5} className="p-12 text-center"><RefreshCw className="w-6 h-6 animate-spin text-primary mx-auto stroke-[3px]"/></td></tr>
                     ) : filtered.length === 0 ? (
-                        <tr><td colSpan={5} className="p-8 text-center">No articles found. Click Generate to write one!</td></tr>
+                        <tr><td colSpan={5} className="p-12 text-center font-bold text-gray-400">No content nodes found. Deploy AI Agent.</td></tr>
                     ) : filtered.map(post => (
-                        <tr key={post.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 max-w-[300px]">
-                                <div className="font-bold text-gray-900 truncate">
-                                    {post.title || <span className="text-gray-300 italic">Untitled Masterpiece</span>}
+                        <tr key={post.id} className="group hover:bg-gray-50/50 transition-all">
+                            <td className="px-8 py-6 max-w-[400px]">
+                                <div className="font-black text-gray-900 text-[15px] tracking-tighter uppercase italic group-hover:text-primary transition-colors truncate">
+                                    {post.title || "Untitled Masterpiece"}
                                 </div>
-                                <div className="text-xs text-gray-400 truncate mt-1">/{post.slug || "no-slug"}</div>
+                                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">/{post.slug || "no-slug"}</div>
                             </td>
-                            <td className="px-6 py-4">
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${post.published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                                    {post.published ? "Published" : "Draft"}
+                            <td className="px-8 py-6">
+                                <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                    post.published ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
+                                }`}>
+                                    {post.published ? "Live Presence" : "Neural Draft"}
                                 </span>
                             </td>
-                            <td className="px-6 py-4">
-                                <div className="flex items-center gap-1.5 whitespace-nowrap text-gray-500">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    {post.read_time_minutes} mins
+                            <td className="px-8 py-6">
+                                <div className="flex items-center gap-2 text-[11px] font-black text-indigo-600 uppercase tracking-tight bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 w-fit">
+                                    <Clock className="w-3 h-3 stroke-[2.5px]" />
+                                    {post.read_time_minutes} MINS
                                 </div>
                             </td>
-                            <td className="px-6 py-4 text-xs whitespace-nowrap text-gray-500 space-y-1">
-                                <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Created {new Date(post.created_at).toLocaleDateString()}</div>
+                            <td className="px-8 py-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> {new Date(post.created_at).toLocaleDateString()}</div>
                             </td>
-                            <td className="px-6 py-4">
-                                <div className="flex items-center justify-end gap-2 text-right">
-                                     <button onClick={() => handleEdit(post)} className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors tooltip-trigger" title="Edit Article">
-                                        <Edit2 className="w-4 h-4" />
+                            <td className="px-8 py-6">
+                                <div className="flex items-center justify-end gap-3 text-right">
+                                     <button onClick={() => handleEdit(post)} className="p-2.5 rounded-xl bg-gray-50 text-gray-400 hover:text-primary hover:bg-primary/5 transition-all border border-gray-100 shadow-sm" title="Edit Article">
+                                        <Edit2 className="w-4 h-4 stroke-[2.5px]" />
                                      </button>
-                                     <button onClick={() => togglePublished(post)} className="p-1 rounded-lg hover:bg-gray-100 transition-colors" title={post.published ? "Unpublish" : "Publish"}>
-                                        {post.published ? <ToggleRight className="w-7 h-7 text-green-500" /> : <ToggleLeft className="w-7 h-7 text-gray-300" />}
+                                     <button onClick={() => togglePublished(post)} className="p-1 rounded-xl transition-all" title={post.published ? "Unpublish" : "Publish"}>
+                                        {post.published ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-gray-300" />}
                                      </button>
-                                     <button onClick={() => deletePost(post.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors tooltip-trigger">
-                                        <Trash2 className="w-4 h-4" />
+                                     <button onClick={() => deletePost(post.id)} className="p-2.5 rounded-xl bg-red-50 text-red-300 hover:text-red-600 transition-all border border-red-100">
+                                        <Trash2 className="w-4 h-4 stroke-[2.5px]" />
                                      </button>
                                 </div>
                             </td>
