@@ -7,18 +7,14 @@ import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, X, Upload, Refres
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { SafariPackage } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
 
 const USD_KES = 130;
 
@@ -408,29 +404,31 @@ export default function PackagesPage() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent className="rounded-3xl border-0 shadow-2xl">
-          <AlertDialogHeader>
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="rounded-3xl border-0 shadow-2xl p-6">
+          <DialogHeader>
             <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mb-4">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
-            <AlertDialogTitle className="text-xl font-bold">Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500">
+            <DialogTitle className="text-xl font-bold text-gray-900 border-0">Are you absolutely sure?</DialogTitle>
+            <DialogDescription className="text-gray-500 mt-2">
               This will permanently delete the package <span className="font-bold text-gray-900">"{packages.find(p => p.id === packageToDelete)?.name}"</span>. 
               This action cannot be undone and will remove it from all public sections of the website.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 mt-6">
-            <AlertDialogCancel className="rounded-xl border-gray-200">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-6 justify-end">
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)} className="rounded-xl border-gray-200">
+              Cancel
+            </Button>
+            <Button 
               onClick={() => packageToDelete && deletePackage(packageToDelete)}
               className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 font-bold"
             >
               Delete Permanently
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
