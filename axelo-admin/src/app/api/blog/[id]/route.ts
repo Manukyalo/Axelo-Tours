@@ -3,12 +3,12 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
     const body = await req.json();
-    const id = params.id;
+    const { id } = await params;
 
     const { data, error } = await supabase
       .from("blog_posts")
@@ -31,11 +31,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const id = params.id;
+    const { id } = await params;
 
     const { error } = await supabase
       .from("blog_posts")

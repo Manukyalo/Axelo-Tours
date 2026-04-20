@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
-export async function GET(_req: Request, { params }: { params: { packageId: string } }) {
-  const { packageId } = params;
+export async function GET(_req: Request, { params }: { params: Promise<{ packageId: string }> }) {
+  const { packageId } = await params;
   if (!packageId) return Response.json({ reviews: [] });
 
   const supabase = createClient(

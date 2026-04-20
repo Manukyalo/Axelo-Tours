@@ -87,6 +87,8 @@ export default function PartnersPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -131,6 +133,32 @@ export default function PartnersPage() {
     }
 
     setSubmitted(true);
+  };
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+
+    try {
+      const res = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newsletterEmail,
+          source: 'Partner Newsletter'
+        }),
+      });
+
+      if (res.ok) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+      } else {
+        setNewsletterStatus('error');
+      }
+    } catch (err) {
+      setNewsletterStatus('error');
+    }
   };
 
   return (
@@ -472,8 +500,74 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      {/* ─── Newsletter / Nexus ────────────────────────────────────────────── */}
+      <section className="py-24 bg-brand-dark relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,#e5a93e,transparent_50%)]" />
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-4xl mx-auto bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="font-display text-3xl font-bold text-white mb-4">Stay in the Loop</h2>
+                <p className="text-gray-300 leading-relaxed mb-0">
+                  Not ready to apply yet? Join <strong>Axelo Nexus</strong>, our monthly newsletter for professional partners featuring:
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {[
+                    'Advance notice of new group tours',
+                    'Educational webinar invites',
+                    'Kenya & Tanzania travel updates',
+                    'B2B tech stack sneak peeks'
+                  ].map(item => (
+                    <li key={item} className="flex items-center gap-3 text-sm text-gray-400">
+                      <CheckCircle className="w-4 h-4 text-accent" /> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                {newsletterStatus === 'success' ? (
+                  <div className="text-center p-6 bg-accent/10 border border-accent/20 rounded-2xl">
+                    <CheckCircle className="w-12 h-12 text-accent mx-auto mb-3" />
+                    <h3 className="text-xl font-bold text-white mb-2">You&apos;re Subscribed!</h3>
+                    <p className="text-gray-400 text-sm">Welcome to Axelo Nexus.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleNewsletterSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">Business Email</label>
+                      <input
+                        type="email"
+                        value={newsletterEmail}
+                        onChange={(e) => setNewsletterEmail(e.target.value)}
+                        placeholder="you@travelagency.com"
+                        className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-4 outline-none focus:ring-2 focus:ring-accent/50 transition-all"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={newsletterStatus === 'loading'}
+                      className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-4 rounded-xl transition-all duration-300 disabled:opacity-50"
+                    >
+                      {newsletterStatus === 'loading' ? 'Joining...' : 'Join the Nexus'}
+                    </button>
+                    {newsletterStatus === 'error' && (
+                      <p className="text-xs text-red-400 text-center">Something went wrong. Please try again.</p>
+                    )}
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── Final CTA ────────────────────────────────────────────────────── */}
-      <section className="py-20 bg-brand-dark text-white">
+      <section className="py-20 bg-brand-dark/95 text-white border-t border-white/5">
         <div className="container mx-auto px-6 text-center">
           <h2 className="font-display text-4xl font-bold mb-4">Ready to start selling East Africa?</h2>
           <p className="text-gray-400 text-lg mb-8">Already a partner?</p>

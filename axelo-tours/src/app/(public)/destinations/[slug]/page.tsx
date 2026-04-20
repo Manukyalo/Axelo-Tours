@@ -45,8 +45,9 @@ const DESTINATION_DATA: Record<string, any> = {
   }
 };
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const dest = DESTINATION_DATA[params.slug];
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const dest = DESTINATION_DATA[slug];
   if (!dest) return { title: "Destination Not Found" };
 
   return {
@@ -69,8 +70,9 @@ async function getPackagesForDestination(locationName: string) {
   return data || [];
 }
 
-export default async function DestinationPage({ params }: { params: { slug: string } }) {
-  const dest = DESTINATION_DATA[params.slug];
+export default async function DestinationPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const dest = DESTINATION_DATA[slug];
   if (!dest) notFound();
 
   const packages = await getPackagesForDestination(dest.name);
@@ -102,7 +104,7 @@ export default async function DestinationPage({ params }: { params: { slug: stri
   return (
     <>
       <Script
-        id={`jsonld-dest-${params.slug}`}
+        id={`jsonld-dest-${slug}`}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />

@@ -37,7 +37,8 @@ export default function ConfirmationPage() {
                 .from('bookings')
                 .select(`
                     *,
-                    packages (*)
+                    packages (*),
+                    clients (*)
                 `)
                 .eq('id', bookingId)
                 .single();
@@ -75,7 +76,7 @@ export default function ConfirmationPage() {
                         Safari <span className="text-primary italic">Confirmed!</span>
                     </h1>
                     <p className="text-muted-foreground text-lg font-medium">
-                        Pack your bags, {booking?.client_id?.full_name || 'Adventurer'}! Your safari experience is officially secured.
+                        Pack your bags, {booking?.clients?.full_name || 'Adventurer'}! Your safari experience is officially secured.
                     </p>
                 </motion.div>
 
