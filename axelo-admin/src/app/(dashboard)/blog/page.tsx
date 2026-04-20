@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, 
   X, RefreshCw, Sparkles, BookOpen, Clock, Calendar, CheckCircle2,
-  FileText, Save, ExternalLink, Code
+  FileText, Save, ExternalLink, Code, Link
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
