@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Download, Check } from 'lucide-react';
+import { ConfirmBookingButton } from './ConfirmBookingButton';
 
 const STATUS_CONFIG: Record<string, { cls: string; label: string }> = {
   draft: { cls: 'bg-gray-500/20 text-gray-300 border-gray-500/30', label: 'Draft' },
@@ -162,12 +163,10 @@ export default async function MyQuotesPage() {
 
                   {q.status === 'approved' && (
                     <div className="flex items-center gap-3">
-                      <div className="text-sm text-blue-300 mr-2">
+                      <div className="text-sm text-blue-300 mr-2 hidden sm:block">
                         ✅ Quote approved! Confirm this booking.
                       </div>
-                      <button className="bg-primary hover:bg-primary/90 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-colors">
-                        Confirm Booking
-                      </button>
+                      <ConfirmBookingButton quoteId={q.id} />
                     </div>
                   )}
                 </div>

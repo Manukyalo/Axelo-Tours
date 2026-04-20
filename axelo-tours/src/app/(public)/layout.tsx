@@ -2,6 +2,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ExitIntentPopup } from "@/components/home/ExitIntentPopup";
 import Link from "next/link";
 import { Globe, Camera, X, MessageCircle } from "lucide-react";
+import { NewsletterForm } from "@/components/layout/NewsletterForm";
+import { cn } from "@/lib/utils";
 
 export default function PublicLayout({
   children,
@@ -52,7 +54,12 @@ export default function PublicLayout({
                         link === "Partner with Us" ? "/partners" : 
                         "#"
                       } 
-                      className="text-gray-400 hover:text-white transition-colors duration-300"
+                      className={cn(
+                        "text-sm transition-all duration-300",
+                        link === "Partner with Us"
+                          ? "inline-block bg-accent hover:bg-accent/90 text-white font-bold py-2.5 px-5 rounded-xl mt-2 shadow-lg shadow-accent/20 hover:scale-105 active:scale-95"
+                          : "text-gray-400 hover:text-white"
+                      )}
                     >
                       {link}
                     </Link>
@@ -79,16 +86,7 @@ export default function PublicLayout({
             <div>
               <h4 className="font-display font-bold text-lg mb-6">Join the Journey</h4>
               <p className="text-gray-400 mb-6 font-medium">Get safari tips and exclusive offers delivered to your inbox.</p>
-              <div className="flex">
-                <input 
-                  type="email" 
-                  placeholder="Your Email" 
-                  className="bg-white/5 border border-white/10 rounded-l-lg px-4 py-3 outline-none focus:border-accent flex-grow transition-colors duration-300"
-                />
-                <button className="bg-primary hover:bg-primary/90 text-white rounded-r-lg px-6 font-bold transition-all duration-300">
-                  Go
-                </button>
-              </div>
+              <NewsletterForm />
             </div>
           </div>
 

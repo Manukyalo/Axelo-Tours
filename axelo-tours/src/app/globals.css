@@ -99,6 +99,10 @@
   --ring: #C8962E;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer base {
   * {
     @apply border-border;

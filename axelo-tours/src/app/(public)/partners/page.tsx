@@ -167,13 +167,13 @@ export default function PartnersPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#apply"
-              className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white font-bold px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5 active:scale-95"
             >
               Apply for Partnership <ArrowRight className="w-5 h-5" />
             </a>
             <Link
               href="/partner/login"
-              className="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:bg-white/5"
+              className="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white font-bold px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl transition-all duration-300 hover:bg-white/5 active:scale-95"
             >
               Partner Login
             </Link>
@@ -477,11 +477,11 @@ export default function PartnersPage() {
         <div className="container mx-auto px-6 text-center">
           <h2 className="font-display text-4xl font-bold mb-4">Ready to start selling East Africa?</h2>
           <p className="text-gray-400 text-lg mb-8">Already a partner?</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#apply" className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a href="#apply" className="inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-accent hover:bg-accent/90 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95">
               Apply Now <ArrowRight className="w-5 h-5" />
             </a>
-            <Link href="/partner/login" className="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300">
+            <Link href="/partner/login" className="inline-flex items-center justify-center w-full sm:w-auto gap-2 border border-white/20 hover:border-white/40 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 active:scale-95">
               <Users className="w-5 h-5" /> Partner Portal Login
             </Link>
           </div>
