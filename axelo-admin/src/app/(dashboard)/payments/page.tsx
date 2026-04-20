@@ -188,95 +188,96 @@ export default function PaymentsPage() {
               </div>
           </div>
 
-      {/* Manifest Table */}
-      <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden relative">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-[#fcfcfc] text-[10px] uppercase text-gray-400 font-bold tracking-widest border-b border-gray-100">
-              <tr>
-                {["Transaction Hash / Ref","Manifest Unit","Client Identity","Channel Terminal","Settlement Value","Audit Status","Timestamp","Analysis"].map(h => (
-                  <th key={h} className="px-8 py-6">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {loading ? (
-                <tr><td colSpan={8} className="px-8 py-20 text-center"><RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto opacity-20" /></td></tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                    <td colSpan={8} className="px-8 py-32 text-center text-gray-300">
-                        <div className="flex flex-col items-center gap-4">
-                            <Activity className="w-12 h-12 opacity-10" />
-                            <span className="font-black uppercase tracking-[0.3em] text-[10px]">No transaction signals detected</span>
+          {/* Manifest Table */}
+          <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden relative">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-[#fcfcfc] text-[10px] uppercase text-gray-400 font-bold tracking-widest border-b border-gray-100">
+                  <tr>
+                    {["Transaction Hash / Ref","Manifest Unit","Client Identity","Channel Terminal","Settlement Value","Audit Status","Timestamp","Analysis"].map(h => (
+                      <th key={h} className="px-8 py-6">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {loading ? (
+                    <tr><td colSpan={8} className="px-8 py-20 text-center"><RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto opacity-20" /></td></tr>
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                        <td colSpan={8} className="px-8 py-32 text-center text-gray-300">
+                            <div className="flex flex-col items-center gap-4">
+                                <Activity className="w-12 h-12 opacity-10" />
+                                <span className="font-black uppercase tracking-[0.3em] text-[10px]">No transaction signals detected</span>
+                            </div>
+                        </td>
+                    </tr>
+                  ) : filtered.map(p => (
+                    <tr key={p.id} className="group hover:bg-[#fafafa] transition-all duration-300">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl border border-gray-100 shadow-sm group-hover:bg-white group-hover:scale-110 transition-all duration-500 overflow-hidden`}>
+                                 {p.provider === "intasend" 
+                                   ? <Smartphone className="w-4 h-4 text-emerald-600" /> 
+                                   : <CreditCard className="w-4 h-4 text-indigo-600" />}
+                            </div>
+                            <span className="font-mono text-[11px] font-black text-gray-500 group-hover:text-gray-900 transition-colors tracking-tight">
+                                {p.reference}
+                            </span>
                         </div>
-                    </td>
-                </tr>
-              ) : filtered.map(p => (
-                <tr key={p.id} className="group hover:bg-[#fafafa] transition-all duration-300">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl border border-gray-100 shadow-sm group-hover:bg-white group-hover:scale-110 transition-all duration-500 overflow-hidden`}>
-                             {p.provider === "intasend" 
-                               ? <Smartphone className="w-4 h-4 text-emerald-600" /> 
-                               : <CreditCard className="w-4 h-4 text-indigo-600" />}
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Manifest Unit</span>
+                            <span className="font-bold text-gray-900 tracking-tighter">#{p.booking_id?.split("-")[0].toUpperCase()}</span>
                         </div>
-                        <span className="font-mono text-[11px] font-black text-gray-500 group-hover:text-gray-900 transition-colors tracking-tight">
-                            {p.reference}
+                      </td>
+                      <td className="px-8 py-6 text-[13px]">
+                        <div className="flex flex-col">
+                          <span className="font-black text-gray-900 leading-tight tracking-tighter">
+                            {p.bookings?.clients?.full_name ?? "External Protocol"}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-bold italic mt-0.5">{p.bookings?.packages?.name ?? "Custom Settlement"}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${
+                          p.provider === "intasend" ? "bg-emerald-50/50 text-emerald-600 border-emerald-100" : "bg-indigo-50/50 text-indigo-600 border-indigo-100"
+                        }`}>
+                          {p.provider === "intasend" ? "M-Pesa Hub" : "Card Terminal"}
                         </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Manifest Unit</span>
-                        <span className="font-bold text-gray-900 tracking-tighter">#{p.booking_id?.split("-")[0].toUpperCase()}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-[13px]">
-                    <div className="flex flex-col">
-                      <span className="font-black text-gray-900 leading-tight tracking-tighter">
-                        {p.bookings?.clients?.full_name ?? "External Protocol"}
-                      </span>
-                      <span className="text-[10px] text-gray-400 font-bold italic mt-0.5">{p.bookings?.packages?.name ?? "Custom Settlement"}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${
-                      p.provider === "intasend" ? "bg-emerald-50/50 text-emerald-600 border-emerald-100" : "bg-indigo-50/50 text-indigo-600 border-indigo-100"
-                    }`}>
-                      {p.provider === "intasend" ? "M-Pesa Hub" : "Card Terminal"}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="font-black text-gray-900 text-lg tracking-tighter leading-none">{formatCurrency(p.amount, p.currency)}</span>
-                      <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1">Settled Net</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
-                      p.status === 'completed' ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100' :
-                      p.status === 'pending' ? 'bg-white text-amber-600 border-amber-100 shadow-sm' :
-                      p.status === 'failed' ? 'bg-white text-red-600 border-red-100 shadow-sm' :
-                      'bg-gray-50 text-gray-400 border-gray-100'
-                    }`}>
-                      {p.status === 'completed' && <ShieldCheck className="w-3.5 h-3.5" />}
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-gray-500 whitespace-nowrap text-[11px] font-bold tracking-tight">
-                    {format(new Date(p.created_at), "dd MMM yyyy")}
-                    <span className="block text-[9px] text-gray-300 font-black uppercase tracking-widest mt-0.5">{format(new Date(p.created_at), "HH:mm")} Z</span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <button className="p-2.5 bg-gray-50 hover:bg-white text-gray-400 hover:text-gray-900 border border-gray-100 hover:shadow-xl rounded-xl transition-all duration-300 group/btn">
-                        <ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="font-black text-gray-900 text-lg tracking-tighter leading-none">{formatCurrency(p.amount, p.currency)}</span>
+                          <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1">Settled Net</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
+                          p.status === 'completed' ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100' :
+                          p.status === 'pending' ? 'bg-white text-amber-600 border-amber-100 shadow-sm' :
+                          p.status === 'failed' ? 'bg-white text-red-600 border-red-100 shadow-sm' :
+                          'bg-gray-50 text-gray-400 border-gray-100'
+                        }`}>
+                          {p.status === 'completed' && <ShieldCheck className="w-3.5 h-3.5" />}
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-gray-500 whitespace-nowrap text-[11px] font-bold tracking-tight">
+                        {format(new Date(p.created_at), "dd MMM yyyy")}
+                        <span className="block text-[9px] text-gray-300 font-black uppercase tracking-widest mt-0.5">{format(new Date(p.created_at), "HH:mm")} Z</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <button className="p-2.5 bg-gray-50 hover:bg-white text-gray-400 hover:text-gray-900 border border-gray-100 hover:shadow-xl rounded-xl transition-all duration-300 group/btn">
+                            <ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
       </div>
     </div>
   );
