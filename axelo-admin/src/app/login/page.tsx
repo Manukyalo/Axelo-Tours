@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/admin");
+      router.push("/");
     }
   };
 
