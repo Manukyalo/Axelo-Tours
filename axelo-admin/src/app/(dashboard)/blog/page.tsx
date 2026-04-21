@@ -425,7 +425,7 @@ export default function BlogList() {
                                     {[
                                         { id: "mobile", label: "Mobile" },
                                         { id: "tablet", label: "Tablet" },
-                                        { id: "desktop", label: "Desktop" }
+                                        { id: "desktop", label: "Ultrawide (21:9)" }
                                     ].map((vp) => (
                                         <button 
                                             key={vp.id}
@@ -455,18 +455,26 @@ export default function BlogList() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setEditorContent({...editorContent, published: !editorContent.published})}
-                          className={cn(
-                            "px-6 h-11 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-3",
-                            editorContent.published 
-                              ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20" 
-                              : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20"
-                          )}
-                        >
-                          {editorContent.published ? <RefreshCw className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-                          {editorContent.published ? "Retract Intel" : "Authorise Live"}
-                        </button>
+                         <button 
+                           onClick={() => setEditorContent({...editorContent, published: !editorContent.published})}
+                           className={cn(
+                             "px-6 h-11 rounded-xl text-[11px] font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-3 active:scale-[0.98] group overflow-hidden relative border",
+                             editorContent.published 
+                               ? "bg-rose-500/5 text-rose-500 hover:bg-rose-500/10 border-rose-500/20" 
+                               : "bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10 border-emerald-500/20"
+                           )}
+                         >
+                           {/* Button Glow Effect */}
+                           <div className={cn(
+                             "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                             editorContent.published ? "bg-rose-500/10" : "bg-emerald-500/10"
+                           )} />
+                           
+                           {editorContent.published ? <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" /> : <ShieldCheck className="w-4 h-4 group-hover:scale-125 transition-transform" />}
+                           <span className="relative z-10">
+                            {editorContent.published ? "Retract Intel" : "Authorise Intelligence"}
+                           </span>
+                         </button>
 
                         <TacticalButton 
                             onClick={savePost} 
@@ -564,9 +572,9 @@ export default function BlogList() {
                 {(viewMode === "edit" || viewMode === "split") && (
                     <div className={cn("relative h-full overflow-hidden flex flex-col bg-card", viewMode === "split" ? "flex-1" : "w-full")}>
                         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-                            <div className="max-w-4xl mx-auto space-y-12">
+                            <div className="max-w-5xl mx-auto space-y-16 py-12">
                                 <textarea 
-                                    className="w-full bg-transparent border-none outline-none text-6xl font-bold text-foreground tracking-tighter uppercase placeholder:text-muted-foreground/10 resize-none overflow-hidden"
+                                    className="w-full bg-transparent border-none outline-none text-4xl font-bold text-foreground tracking-tight uppercase placeholder:text-muted-foreground/10 resize-none overflow-hidden"
                                     value={editorContent.title}
                                     onChange={e => {
                                       setEditorContent({...editorContent, title: e.target.value});
@@ -574,12 +582,12 @@ export default function BlogList() {
                                       e.target.style.height = e.target.scrollHeight + 'px';
                                     }}
                                     rows={1}
-                                    placeholder="Manifest Title..."
+                                    placeholder="Intelligence Sequence Title..."
                                 />
                                 
-                                <div className="min-h-[70vh] border-l-2 border-primary/10 pl-8 ml-2">
+                                <div className="min-h-[60vh] border-l-[3px] border-primary/20 pl-12 ml-2">
                                   <textarea 
-                                      className="w-full h-full bg-transparent border-none outline-none font-mono text-foreground/80 text-lg leading-relaxed resize-none placeholder:text-muted-foreground/10 selection:bg-primary/20"
+                                      className="w-full h-full bg-transparent border-none outline-none font-mono text-foreground/90 text-xl leading-[1.8] resize-none placeholder:text-muted-foreground/10 selection:bg-primary/20"
                                       value={editorContent.content_html}
                                       onChange={e => {
                                         setEditorContent({...editorContent, content_html: e.target.value});
@@ -594,10 +602,10 @@ export default function BlogList() {
                         </div>
 
                         {/* Zara Command Pad */}
-                        <div className="p-8 bg-card/95 border-t border-border shadow-[0_-20px_50px_rgba(0,0,0,0.12)] relative z-10">
-                           <div className="max-w-4xl mx-auto space-y-5">
+                        <div className="p-10 bg-card/95 border-t border-border/60 shadow-[0_-20px_60px_rgba(0,0,0,0.15)] relative z-10 backdrop-blur-xl">
+                           <div className="max-w-5xl mx-auto space-y-6">
                               {/* Suggestion Chips HUD */}
-                              <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
+                              <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
                                 {[
                                   { label: "Enchant Narrative", cmd: "Make the tone more poetic, adventurous, and emotionally engaging" },
                                   { label: "SEO Calibration", cmd: "Optimize headings, keywords, and meta structure for high-velocity SEO" },
@@ -668,7 +676,10 @@ export default function BlogList() {
 
                 {/* Pane 3: Holographic Preview (Live View) */}
                 {(viewMode === "preview" || viewMode === "split") && (
-                    <div className={cn("h-full overflow-hidden flex flex-col bg-muted/10 border-l border-border", viewMode === "split" ? "w-[45%]" : "flex-1")}>
+                    <div className={cn(
+                        "h-full overflow-hidden flex flex-col bg-slate-900/5 border-l border-border transition-all duration-500", 
+                        viewMode === "split" ? "w-[55%] bg-slate-900/[0.02]" : "flex-1"
+                    )}>
                         <div className="bg-card border-b border-border px-8 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Holographic Render</span>
@@ -680,15 +691,26 @@ export default function BlogList() {
                             </div>
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-slate-950/5 flex justify-center">
+                        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-slate-950/[0.03] flex justify-center items-start">
                             <motion.div 
+                                layout
                                 animate={{ 
-                                    width: previewViewport === "mobile" ? 375 : previewViewport === "tablet" ? 768 : "100%",
-                                    maxWidth: previewViewport === "mobile" ? 375 : previewViewport === "tablet" ? 768 : 800
+                                    width: previewViewport === "mobile" ? 380 : previewViewport === "tablet" ? 768 : "90%",
+                                    maxWidth: previewViewport === "mobile" ? 380 : previewViewport === "tablet" ? 768 : 1200,
+                                    scale: (viewMode === "split" && previewViewport === "desktop") ? 0.85 : 1,
+                                    originY: 0
                                 }}
-                                className="bg-white rounded-[3rem] shadow-2xl border-[12px] border-slate-900 overflow-hidden min-h-[90%] self-start"
+                                className={cn(
+                                    "bg-white shadow-2xl overflow-hidden self-start transition-all duration-700",
+                                    previewViewport === "mobile" ? "aspect-[9/19.5] rounded-[3.5rem] border-[14px] border-slate-900" : 
+                                    previewViewport === "tablet" ? "aspect-[3/4] rounded-[2.5rem] border-[12px] border-slate-900" :
+                                    "rounded-2xl border border-border"
+                                )}
                             >
-                                <div className="p-12 md:p-16 prose prose-slate max-w-none prose-h1:text-4xl prose-h1:font-bold prose-h1:tracking-tighter prose-h1:uppercase prose-p:text-gray-500 prose-p:leading-relaxed selection:bg-primary/20">
+                                {/* Cinematic Scanline Overlay */}
+                                <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
+                                
+                                <div className="p-12 md:p-16 prose prose-slate max-w-none prose-h1:text-4xl prose-h1:font-bold prose-h1:tracking-tight prose-h1:uppercase prose-p:text-gray-500 prose-p:leading-relaxed selection:bg-primary/20 relative z-10">
                                     <div className="mb-12">
                                         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-full text-[9px] font-bold uppercase tracking-widest mb-6">
                                           Travel Intelligence Archive
