@@ -41,7 +41,7 @@ export default function OutreachCRM() {
 
   const findAgencies = async () => {
     setResearching(true);
-    const toastId = toast.loading("Zara is patrolling the global agency landscape...", {
+    const toastId = toast.loading("AI is scanning the market for potential partners...", {
         icon: <Radio className="w-5 h-5 animate-pulse text-indigo-500" />,
     });
     try {
@@ -52,11 +52,11 @@ export default function OutreachCRM() {
         });
         const data = await res.json();
         if(data.success) {
-            toast.success(`Acquired ${data.count} luxury prospect identities.`, { id: toastId });
+            toast.success(`Identified ${data.count} new luxury travel prospects.`, { id: toastId });
             fetchData();
         } else throw new Error(data.error);
     } catch (err: any) {
-        toast.error(err.message || "Prospecting sequence interrupted.", { id: toastId });
+        toast.error(err.message || "Prospecting search interrupted.", { id: toastId });
     }
     setResearching(false);
   };
@@ -72,7 +72,7 @@ export default function OutreachCRM() {
       
       setGenerating(true);
       let count = 0;
-      const toastId = toast.loading(`Drafting ${pendingAgencies.length} neural transmissions...`, {
+      const toastId = toast.loading(`Generating personalized drafts for ${pendingAgencies.length} agencies...`, {
           icon: <Wand2 className="w-5 h-5 animate-spin text-indigo-500" />,
       });
       
@@ -87,13 +87,13 @@ export default function OutreachCRM() {
           } catch(e) {}
       }
       
-      toast.success(`Synchronized ${count} tactical neural drafts.`, { id: toastId });
+      toast.success(`Successfully generated ${count} personalized drafts.`, { id: toastId });
       fetchData();
       setGenerating(false);
   };
 
   const sendEmail = async (outreach_id: string) => {
-      const toastId = toast.loading("Dispatching high-fidelity signal via Resend...", {
+      const toastId = toast.loading("Sending personalized email via Resend...", {
           icon: <Send className="w-5 h-5 text-emerald-500 animate-bounce" />,
       });
       try {
@@ -102,19 +102,19 @@ export default function OutreachCRM() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ outreach_id })
           });
-          if (!res.ok) throw new Error("Transmission failed");
-          toast.success("Signal successfully deployed to destination.", { id: toastId });
+          if (!res.ok) throw new Error("Email delivery failed");
+          toast.success("Email sent successfully.", { id: toastId });
           fetchData();
       } catch (err: any) {
-          toast.error(err.message || "Dispatch aborted due to signal noise.", { id: toastId });
+          toast.error(err.message || "Email delivery aborted.", { id: toastId });
       }
   };
 
   const rejectDraft = async (id: string) => {
-      if(!confirm("Are you sure you want to decommission this strategic draft?")) return;
+      if(!confirm("Are you sure you want to delete this email draft?")) return;
       const { error } = await supabase.from("b2b_outreach").delete().eq("id", id);
       if (!error) {
-          toast.success("Draft asset removed from manifest.");
+          toast.success("Draft removed from queue.");
           fetchData();
       }
   };
@@ -128,62 +128,58 @@ export default function OutreachCRM() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-indigo-600/10 text-indigo-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 border border-indigo-100 shadow-sm">
+            <div className="bg-indigo-600/10 text-indigo-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 border border-indigo-100 shadow-sm">
               <Shield className="w-3.5 h-3.5" />
-              B2B Strategic Command
-            </div>
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Neural Targeting Active
+              Partnership Outreach
             </div>
           </div>
-          <h1 className="text-6xl font-black text-gray-900 tracking-tighter leading-none mb-6 uppercase italic">
-            Outreach <span className="text-indigo-600 font-black">Manifest</span>
+          <h1 className="text-6xl font-bold text-gray-900 tracking-tighter leading-none mb-6 uppercase">
+            Outreach <span className="text-indigo-600">CRM</span>
           </h1>
           <p className="text-gray-500 font-medium max-w-2xl text-xl leading-snug italic">
-            Automating the B2B acquisition pipeline. Identify high-value agency partners and deploy hyper-personalized neural transmissions.
+            Automating the agency partnership pipeline. Identify luxury travel agencies and send personalized outreach campaigns.
           </p>
         </div>
 
         <div className="flex items-center gap-4">
-            <Button 
+             <Button 
                 onClick={findAgencies} 
                 disabled={researching} 
                 variant="outline"
-                className="gap-3 border-gray-200 text-gray-900 bg-white hover:bg-gray-50 font-black uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-sm transition-all"
+                className="gap-3 border-gray-200 text-gray-900 bg-white hover:bg-gray-50 font-bold uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-sm transition-all"
             >
                 {researching ? <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" /> : <Search className="w-5 h-5 text-indigo-600" />}
-                Patrol Landscape
+                Find Prospects
             </Button>
             <Button 
                 onClick={generateAllDrafts} 
                 disabled={generating}
-                className="gap-3 bg-gray-900 hover:bg-black text-white font-black uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-2xl shadow-gray-200 transition-all border-none relative overflow-hidden group"
+                className="gap-3 bg-gray-900 hover:bg-black text-white font-bold uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-2xl shadow-gray-200 transition-all border-none relative overflow-hidden group"
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-emerald-500 opacity-20" />
-                {generating ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 text-emerald-400 group-hover:animate-ping" />}
-                Batch Neural Draft
+                {generating ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 text-emerald-400" />}
+                Generate Drafts
             </Button>
         </div>
       </div>
 
       {/* Strategic Tabs */}
-      <div className="flex flex-wrap gap-3 p-1.5 bg-gray-100/80 rounded-[32px] max-w-fit border border-gray-100 backdrop-blur-xl shrink-0">
+       <div className="flex flex-wrap gap-3 p-1.5 bg-gray-100/80 rounded-[32px] max-w-fit border border-gray-100 backdrop-blur-xl shrink-0">
           {[
-              { id: 'drafts', label: 'Neural Drafts', count: drafts.length, icon: FileEdit, color: 'indigo' },
-              { id: 'sent', label: 'Dispatch Log', count: sent.length, icon: Send, color: 'emerald' },
-              { id: 'crm', label: 'Entity Registry', count: agencies.length, icon: Users, color: 'amber' },
-              { id: 'analytics', label: 'Intelligence', count: null, icon: TrendingUp, color: 'fuchsia' }
+              { id: 'drafts', label: 'Email Drafts', count: drafts.length, icon: FileEdit, color: 'indigo' },
+              { id: 'sent', label: 'Sent History', count: sent.length, icon: Send, color: 'emerald' },
+              { id: 'crm', label: 'Agency Directory', count: agencies.length, icon: Users, color: 'amber' },
+              { id: 'analytics', label: 'Analytics', count: null, icon: TrendingUp, color: 'fuchsia' }
           ].map(tab => (
               <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-3 px-8 py-3 rounded-[24px] text-[10px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden ${activeTab === tab.id ? 'bg-white text-gray-900 shadow-2xl shadow-gray-200/50 scale-[1.02]' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`flex items-center gap-3 px-8 py-3 rounded-[24px] text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative overflow-hidden ${activeTab === tab.id ? 'bg-white text-gray-900 shadow-2xl shadow-gray-200/50 scale-[1.02]' : 'text-gray-400 hover:text-gray-600'}`}
               >
                   <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? `text-${tab.color}-600` : ''} stroke-[2.5px]`} />
                   {tab.label}
                   {tab.count !== null && (
-                    <span className={`ml-2 bg-${tab.color}-50 text-${tab.color}-600 py-1 px-3 rounded-full text-[10px] font-black border border-${tab.color}-100 shadow-sm`}>
+                    <span className={`ml-2 bg-${tab.color}-50 text-${tab.color}-600 py-1 px-3 rounded-full text-[10px] font-bold border border-${tab.color}-100 shadow-sm`}>
                         {tab.count}
                     </span>
                   )}
@@ -208,15 +204,15 @@ export default function OutreachCRM() {
                        </div>
                     ) : drafts.length === 0 ? (
                         <div className="bg-white rounded-[48px] border-4 border-dashed border-gray-100 p-32 text-center shadow-inner group">
-                            <div className="w-24 h-24 bg-gray-50 rounded-[40px] shadow-2xl flex items-center justify-center mx-auto mb-10 relative border border-gray-100 group-hover:rotate-12 transition-transform duration-700">
+                             <div className="w-24 h-24 bg-gray-50 rounded-[40px] shadow-2xl flex items-center justify-center mx-auto mb-10 relative border border-gray-100 group-hover:rotate-12 transition-transform duration-700">
                                 <Mail className="w-12 h-12 text-indigo-600" />
                                 <div className="absolute -top-3 -right-3 w-10 h-10 bg-gray-900 rounded-2xl flex items-center justify-center shadow-xl">
                                     <Sparkles className="w-5 h-5 text-indigo-400 animate-pulse" />
                                 </div>
                             </div>
-                            <h3 className="text-4xl font-black text-gray-900 tracking-tighter uppercase italic mb-4">No Tactical Drafts</h3>
-                            <p className="text-gray-400 max-w-sm mx-auto font-bold text-lg leading-snug italic mb-10">Zara's neural modules have no pending transmissions. Initiate a landscape patrol to acquire new targets.</p>
-                            <Button onClick={findAgencies} className="h-16 px-12 bg-gray-900 hover:bg-black text-white rounded-[24px] font-black uppercase text-[11px] tracking-widest shadow-2xl transition-all">Start Patrol Sequence</Button>
+                            <h3 className="text-4xl font-bold text-gray-900 tracking-tighter uppercase italic mb-4">No Drafts Available</h3>
+                            <p className="text-gray-400 max-w-sm mx-auto font-bold text-lg leading-snug italic mb-10">There are no pending outreach drafts in the queue. Search for agencies to begin prospecting.</p>
+                            <Button onClick={findAgencies} className="h-16 px-12 bg-gray-900 hover:bg-black text-white rounded-[24px] font-bold uppercase text-[11px] tracking-widest shadow-2xl transition-all">Search for Prospects</Button>
                         </div>
                     ) : drafts.map((draft, i) => (
                         <motion.div 
@@ -233,21 +229,21 @@ export default function OutreachCRM() {
                                 <div className="lg:w-1/3 space-y-10 border-r border-gray-100 pr-12 lg:pr-16">
                                     <div>
                                         <div className="flex items-center justify-between mb-8">
-                                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 shadow-sm flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em] bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 shadow-sm flex items-center gap-2">
                                                 <Fingerprint className="w-3.5 h-3.5" />
-                                                Target Identity
+                                                Agency Details
                                             </span>
-                                            <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 font-black italic border border-gray-100 shadow-inner group-hover:rotate-6 transition-all duration-500">
+                                            <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 font-bold italic border border-gray-100 shadow-inner group-hover:rotate-6 transition-all duration-500">
                                                 {draft.b2b_agencies?.name?.[0]}
                                             </div>
                                         </div>
-                                        <h3 className="font-black text-gray-900 text-4xl tracking-tighter mb-2 uppercase italic leading-none">{draft.b2b_agencies?.name || 'Unknown Operator'}</h3>
+                                        <h3 className="font-bold text-gray-900 text-4xl tracking-tighter mb-2 uppercase italic leading-none">{draft.b2b_agencies?.name || 'Unknown Agency'}</h3>
                                         <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-2 text-[11px] font-black text-gray-400 bg-gray-50 px-4 py-1.5 rounded-xl border border-gray-100 uppercase tracking-tight">
+                                            <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 bg-gray-50 px-4 py-1.5 rounded-xl border border-gray-100 uppercase tracking-tight">
                                                 <Globe className="w-3.5 h-3.5 text-indigo-600" />
                                                 {draft.b2b_agencies?.website}
                                             </div>
-                                            <div className="flex items-center gap-2 text-[11px] font-black text-gray-400 bg-gray-50 px-4 py-1.5 rounded-xl border border-gray-100 uppercase tracking-tight">
+                                            <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 bg-gray-50 px-4 py-1.5 rounded-xl border border-gray-100 uppercase tracking-tight">
                                                 <MapPin className="w-3.5 h-3.5 text-indigo-600" />
                                                 {draft.b2b_agencies?.country}
                                             </div>
@@ -255,25 +251,25 @@ export default function OutreachCRM() {
                                     </div>
                                     
                                     <div className="space-y-6">
-                                        <div className="bg-gray-50/50 p-6 rounded-[32px] border border-gray-100 shadow-inner relative overflow-hidden group/box">
+                                         <div className="bg-gray-50/50 p-6 rounded-[32px] border border-gray-100 shadow-inner relative overflow-hidden group/box">
                                             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-100/20 rounded-full -mr-12 -mt-12 blur-2xl group-hover/box:scale-150 transition-transform" />
-                                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-3 relative z-10">
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-3 relative z-10">
                                                 <Layers className="w-4 h-4 text-indigo-600" /> 
-                                                Strategic Lacuna
+                                                Market Analysis
                                             </p>
                                             <p className="text-sm font-bold text-gray-700 leading-relaxed tracking-tight relative z-10 italic">
-                                                {draft.b2b_agencies?.kenya_gap || "Insufficient signal quality for gap analysis."}
+                                                {draft.b2b_agencies?.kenya_gap || "Market analysis not available."}
                                             </p>
                                         </div>
                                         
                                         <div className="bg-emerald-50/30 p-6 rounded-[32px] border border-emerald-50 shadow-inner relative overflow-hidden group/box">
                                             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/20 rounded-full -mr-12 -mt-12 blur-2xl group-hover/box:scale-150 transition-transform" />
-                                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-3 relative z-10">
+                                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-3 relative z-10">
                                                 <Zap className="w-4 h-4" /> 
-                                                Neural Perspective
+                                                Strategy Notes
                                             </p>
                                             <p className="text-sm font-bold text-gray-800 leading-relaxed tracking-tight italic relative z-10">
-                                                "{draft.b2b_agencies?.personalization_hook || "Targeting hook not established."}"
+                                                "{draft.b2b_agencies?.personalization_hook || "No specific notes available."}"
                                             </p>
                                         </div>
                                     </div>
@@ -281,11 +277,11 @@ export default function OutreachCRM() {
 
                                 {/* Transmission Workshop */}
                                 <div className="lg:w-2/3 flex flex-col pt-4">
-                                    <div className="mb-10 bg-gray-900 rounded-[32px] p-6 text-white shadow-2xl shadow-gray-300 border border-gray-800 relative group/subject overflow-hidden">
+                                     <div className="mb-10 bg-gray-900 rounded-[32px] p-6 text-white shadow-2xl shadow-gray-300 border border-gray-800 relative group/subject overflow-hidden">
                                         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent translate-x-[-100%] group-hover/subject:translate-x-[100%] transition-transform duration-1000" />
                                         <div className="flex flex-col gap-3 relative z-10">
-                                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-1">Signal Header</span>
-                                            <h4 className="text-xl font-black tracking-tight italic uppercase">{draft.email_subject}</h4>
+                                            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] mb-1">Subject Line</span>
+                                            <h4 className="text-xl font-bold tracking-tight italic uppercase">{draft.email_subject}</h4>
                                         </div>
                                     </div>
 
@@ -295,13 +291,13 @@ export default function OutreachCRM() {
                                     </div>
                                     
                                     <div className="flex flex-wrap gap-4 mt-12 pt-10 border-t-2 border-dashed border-gray-50">
-                                        <Button 
+                                         <Button 
                                             onClick={() => sendEmail(draft.id)} 
-                                            className="h-16 flex-grow gap-4 bg-gray-900 hover:bg-black text-white rounded-[28px] font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl transition-all relative overflow-hidden group/btn"
+                                            className="h-16 flex-grow gap-4 bg-gray-900 hover:bg-black text-white rounded-[28px] font-bold uppercase tracking-[0.2em] text-[11px] shadow-2xl transition-all relative overflow-hidden group/btn"
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-indigo-500 opacity-20 group-hover/btn:opacity-40 transition-opacity" />
-                                            <Send className="w-5 h-5 group-hover/btn:translate-x-2' transition-transform" /> 
-                                            Deploy Tactical Dispatch
+                                            <Send className="w-5 h-5 transition-transform" /> 
+                                            Send Outreach Email
                                         </Button>
                                         <Button variant="outline" className="h-16 w-16 flex items-center justify-center border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 rounded-[28px] shadow-sm transition-all group/edit">
                                             <FileEdit className="w-6 h-6 group-hover/edit:scale-110 transition-all" />
@@ -331,20 +327,20 @@ export default function OutreachCRM() {
                 >
                     <div className="p-10 lg:p-12 border-b border-gray-50 bg-[#fcfcfc] flex items-center justify-between">
                         <div>
-                            <h3 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Global Entity Registry</h3>
-                            <p className="text-gray-400 font-bold text-sm tracking-tight mt-2 uppercase">Authenticated Agency Prospect Database</p>
+                            <h3 className="text-3xl font-bold text-gray-900 tracking-tighter uppercase italic leading-none">Agency Directory</h3>
+                            <p className="text-gray-400 font-bold text-sm tracking-tight mt-2 uppercase">Authenticated Travel Agency Database</p>
                         </div>
-                        <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm text-[10px] font-black uppercase tracking-widest text-indigo-600">
+                        <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm text-[10px] font-bold uppercase tracking-widest text-indigo-600">
                              <Database className="w-4 h-4" />
-                             {agencies.length} Identities Authenticated
+                             {agencies.length} Records Active
                         </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-[#fcfcfc] text-[10px] uppercase text-gray-300 font-black tracking-[0.3em] border-b border-gray-50">
+                            <thead className="bg-[#fcfcfc] text-[10px] uppercase text-gray-300 font-bold tracking-[0.2em] border-b border-gray-50">
                                 <tr>
-                                    {["Identity Signature", "Operational Territory", "Neural Niche", "System Status", ""].map(h => (
-                                        <th key={h} className="px-10 py-6 font-black">{h}</th>
+                                    {["Agency Details", "Location", "Specialty", "Priority", ""].map(h => (
+                                        <th key={h} className="px-10 py-6 font-bold">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -353,12 +349,12 @@ export default function OutreachCRM() {
                                     <tr key={agency.id} className="group hover:bg-indigo-50/30 transition-all duration-300 cursor-default">
                                         <td className="px-10 py-8">
                                             <div className="flex items-center gap-5">
-                                               <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-lg font-black text-gray-300 italic group-hover:bg-gray-900 group-hover:text-white transition-all">
+                                                <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-lg font-bold text-gray-300 italic group-hover:bg-gray-900 group-hover:text-white transition-all">
                                                    {agency.name[0]}
                                                </div>
                                                <div className="flex flex-col">
-                                                  <span className="font-black text-gray-900 text-lg tracking-tighter group-hover:text-indigo-600 transition-colors uppercase italic leading-none">{agency.name}</span>
-                                                  <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2 italic flex items-center gap-2">
+                                                  <span className="font-bold text-gray-900 text-lg tracking-tighter group-hover:text-indigo-600 transition-colors uppercase italic leading-none">{agency.name}</span>
+                                                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.1em] mt-2 italic flex items-center gap-2">
                                                       <Globe className="w-3 h-3" />
                                                       {agency.website}
                                                   </span>
@@ -403,11 +399,11 @@ export default function OutreachCRM() {
                     exit={{ opacity: 0 }} 
                     className="bg-white rounded-[64px] border-4 border-dashed border-gray-100 p-40 text-center shadow-inner"
                 >
-                    <div className="w-20 h-20 bg-gray-50 rounded-[32px] flex items-center justify-center mx-auto mb-8 text-gray-200">
+                     <div className="w-20 h-20 bg-gray-50 rounded-[32px] flex items-center justify-center mx-auto mb-8 text-gray-200">
                         <Layout className="w-10 h-10" />
                     </div>
-                    <h3 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic leading-none mb-4">Neural Node Offline</h3>
-                    <p className="text-gray-400 max-w-sm mx-auto font-bold text-lg leading-snug italic">Dispatch Log and Intelligence modules require active transmission history to calibrate.</p>
+                    <h3 className="text-3xl font-bold text-gray-900 tracking-tighter uppercase italic leading-none mb-4">Module Initializing</h3>
+                    <p className="text-gray-400 max-w-sm mx-auto font-bold text-lg leading-snug italic">Sent history and analytics will be available once outreach campaigns are active.</p>
                 </motion.div>
             )}
         </AnimatePresence>
@@ -432,14 +428,14 @@ export default function OutreachCRM() {
                     ))}
               </div>
 
-              <div className="bg-indigo-600 p-6 rounded-[32px] shadow-[0_40px_100px_rgba(79,70,229,0.4)] pointer-events-auto cursor-pointer hover:scale-110 active:scale-95 transition-all group">
+               <div className="bg-indigo-600 p-6 rounded-[32px] shadow-[0_40px_100px_rgba(79,70,229,0.4)] pointer-events-auto cursor-pointer hover:scale-110 active:scale-95 transition-all group">
                    <div className="flex items-center gap-4 text-white">
                         <div className="w-14 h-14 bg-white/20 rounded-[24px] flex items-center justify-center border border-white/20">
                             <Sparkles className="w-7 h-7 group-hover:rotate-12 transition-transform" />
                         </div>
                         <div className="pr-4">
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60 block">AI Concierge</span>
-                            <span className="text-xl font-black italic uppercase tracking-tight">Zara Strategic Assistant</span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 block">AI Concierge</span>
+                            <span className="text-xl font-bold italic uppercase tracking-tight">Campaign Manager</span>
                         </div>
                    </div>
               </div>

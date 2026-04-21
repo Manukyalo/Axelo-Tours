@@ -1,32 +1,46 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
 import {
-  Search, Filter, Download, Eye, ChevronRight, ChevronLeft,
-  X, CheckCircle, XCircle, RefreshCw, Plus, Trash2, 
-  Clock, Users, MapPin, DollarSign, Award, AlertTriangle, Activity,
-  Shield, Zap, Globe, Briefcase, ChevronDown, MoreHorizontal,
-  FileSearch, UserCheck, CreditCard, Calendar, Loader2
+  Search, Eye, RefreshCw, ChevronRight, AlertTriangle,
+  MapPin, Calendar, Globe, Activity, Shield, CheckCircle,
+  XCircle, FileSearch, CreditCard, Zap, X, Clock,
+  Download, Plus, ChevronDown, Briefcase, ChevronLeft
 } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/formatters";
 import { Booking } from "@/types";
+import { format } from "date-fns";
+import toast from "react-hot-toast";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { 
+  OperationalHeader, 
+  AssetBadge, 
+  MonoSection, 
+  TacticalButton, 
+  MissionCard 
+} from "@/components/OperationalComponents";
+import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 12;
 
-const STATUS_CONFIG: Record<string, { label: string, color: string, bg: string, border: string, icon: any }> = {
-  pending: { label: "Awaiting Clearance", color: "text-amber-600", bg: "bg-amber-50/50", border: "border-amber-100", icon: Clock },
-  confirmed: { label: "Manifest Secured", color: "text-emerald-600", bg: "bg-emerald-50/50", border: "border-emerald-100", icon: Shield },
-  completed: { label: "Deployment Finalized", color: "text-indigo-600", bg: "bg-indigo-50/50", border: "border-indigo-100", icon: CheckCircle },
-  cancelled: { label: "Mission Aborted", color: "text-rose-600", bg: "bg-rose-50/50", border: "border-rose-100", icon: XCircle },
+const STATUS_VARIANTS: Record<string, { label: string, variant: "success" | "warning" | "error" | "info" | "neutral", icon: any }> = {
+  pending: { label: "Awaiting Clearance", variant: "warning", icon: Clock },
+  confirmed: { label: "Manifest Secured", variant: "info", icon: Shield },
+  completed: { label: "Deployment Finalized", variant: "success", icon: CheckCircle },
+  cancelled: { label: "Mission Aborted", variant: "error", icon: XCircle },
+};
+
+const PAYMENT_VARIANTS: Record<string, { label: string, variant: "success" | "warning" | "error" | "info" | "neutral" }> = {
+  paid: { label: "Settled", variant: "success" },
+  partial: { label: "Partial", variant: "warning" },
+  unpaid: { label: "Outstanding", variant: "error" },
+  refunded: { label: "Voided", variant: "neutral" },
 };
 
 export default function BookingsPage() {
@@ -69,7 +83,9 @@ export default function BookingsPage() {
     } else {
       toast.success(`Manifest state transitioned to ${status.toUpperCase()}`);
       fetchBookings();
-      setSelectedBooking(null);
+      if (selectedBooking?.id === id) {
+        setSelectedBooking(prev => prev ? { ...prev, status: status as Booking["status"] } : null);
+      }
     }
     setUpdating(null);
   };
@@ -96,409 +112,381 @@ export default function BookingsPage() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="p-8 space-y-8 bg-[#fafafa] min-h-screen">
-      {/* Intelligence Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-primary/70">Secure Operations Center</span>
-          </div>
-          <h1 className="text-5xl font-black text-gray-900 tracking-tightest leading-none">
-            Global Manifest
-          </h1>
-          <p className="text-gray-400 mt-4 font-bold max-w-xl text-lg leading-relaxed opacity-70 italic">
-            Real-time synchronization of guest trajectories, financial settlements, and operational readiness.
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={exportCSV} 
-            className="h-12 px-6 flex items-center gap-2 font-black text-[11px] uppercase tracking-widest text-gray-500 hover:text-gray-900 border border-gray-200 rounded-2xl transition-all hover:bg-white hover:shadow-md"
-          >
-            <Download className="w-4 h-4" />
-            Export Intel
-          </button>
-          <Link href="/bookings/new">
-            <button className="h-12 px-8 flex items-center gap-2 font-black text-[11px] uppercase tracking-widest bg-gray-900 text-white rounded-2xl shadow-xl shadow-gray-200 hover:bg-black transition-all active:scale-95">
-              <Plus className="w-5 h-5" />
-              New Entry
-            </button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Grid Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-         {[
-           { label: "Active Deployments", value: total, icon: Globe, color: "text-indigo-600", bg: "bg-indigo-50" },
-           { label: "Pending Clearance", value: bookings.filter(b => b.status === 'pending').length, icon: Shield, color: "text-amber-600", bg: "bg-amber-50" },
-           { label: "Settled Manifests", value: bookings.filter(b => b.payment_status === 'paid').length, icon: CreditCard, color: "text-emerald-600", bg: "bg-emerald-50" },
-           { label: "Operational Risk", value: bookings.filter(b => b.status === 'cancelled').length, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
-         ].map((stat, i) => (
-           <div key={i} className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm flex items-center gap-6 hover:shadow-xl hover:shadow-gray-100 transition-all group">
-             <div className={`w-16 h-16 rounded-[24px] ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform shadow-sm border border-current/5`}>
-               <stat.icon className="w-7 h-7 stroke-[1.5px]" />
-             </div>
-             <div>
-               <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-               <p className="text-3xl font-black text-gray-900 tracking-tightest leading-none">{stat.value}</p>
-             </div>
-           </div>
-         ))}
-      </div>
-
-      <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-        {/* Filters Bar */}
-        <div className="p-6 border-b border-gray-50 flex items-center justify-between gap-6 bg-gray-50/20">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
-                value={search} onChange={e => setSearch(e.target.value)} 
-                placeholder="Identify Client, Manifest ID or Reference..."
-                className="w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-xs font-bold tracking-tight focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300" 
-              />
-            </div>
-            <div className="flex gap-2">
-              <div className="relative group">
-                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-                   className="h-12 pl-4 pr-10 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer">
-                   <option value="all">Security State: All</option>
-                   {["pending","confirmed","completed","cancelled"].map(s => (
-                     <option key={s} value={s} className="capitalize">{s}</option>
-                   ))}
-                 </select>
-                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 pointer-events-none" />
-              </div>
-              <div className="relative group">
-                 <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
-                   className="h-12 pl-4 pr-10 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer">
-                   <option value="all">Transfers: All</option>
-                   {["unpaid","partial","paid","refunded"].map(s => (
-                     <option key={s} value={s} className="capitalize">{s}</option>
-                   ))}
-                 </select>
-                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
+    <div className="p-8 space-y-10 bg-background min-h-screen">
+      <OperationalHeader 
+        title="Deployment Logs" 
+        subtitle="Mission Manifests & Logistics"
+        icon={Globe}
+        actions={
+          <div className="flex items-center gap-3">
              <button 
-              onClick={() => fetchBookings()}
-              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-primary transition-colors bg-white rounded-xl border border-gray-200 shadow-sm"
-             >
-               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-             </button>
-             <div className="h-10 px-4 bg-gray-900 rounded-xl flex items-center gap-2">
-               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-               <span className="text-[10px] font-black text-white uppercase tracking-widest">{total} Synchronized</span>
-             </div>
-          </div>
-        </div>
-
-        {/* Table Content */}
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/30 border-b border-gray-100 text-[10px] uppercase tracking-[0.2em] text-gray-400 font-black">
-                <th className="px-8 py-5">Manifest Ref</th>
-                <th className="px-8 py-5">Identity Profile</th>
-                <th className="px-8 py-5">Strategic Vector</th>
-                <th className="px-8 py-5">Dispatch Date</th>
-                <th className="px-8 py-5 text-center">Security Status</th>
-                <th className="px-8 py-5 text-right">Settlement</th>
-                <th className="px-8 py-5 text-right w-[120px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {loading ? (
-                <tr><td colSpan={7} className="px-8 py-20 text-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Synchronizing Global Network...</p>
-                  </div>
-                </td></tr>
-              ) : bookings.length === 0 ? (
-                <tr><td colSpan={7} className="px-8 py-20 text-center flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-200">
-                      <FileSearch className="w-8 h-8" />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 italic">No entries detected in operational sector.</p>
-                </td></tr>
-              ) : bookings.map(b => (
-                <tr key={b.id} className="group hover:bg-gray-50/50 transition-all">
-                  <td className="px-8 py-6">
-                    <div className="font-mono text-[11px] font-black text-primary bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100/50 w-fit">
-                      {b.booking_ref || b.id.split("-")[0].toUpperCase()}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="font-black text-gray-900 tracking-tighter text-sm mb-1 group-hover:text-primary transition-colors">
-                        {b.clients?.full_name ?? "ANONYMOUS ENTITY"}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded tracking-widest">
-                          {b.clients?.nationality || "INTL"}
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-medium">{b.clients?.email}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
-                          <MapPin className="w-4 h-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-extrabold text-gray-700 tracking-tighter text-xs truncate max-w-[180px]">
-                          {b.packages?.name ?? "Custom Strategic Plan"}
-                        </span>
-                        <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{b.packages?.destination || "Global"}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                         <Calendar className="w-3 h-3 text-gray-400" />
-                         <span className="font-bold text-gray-800 tracking-tighter text-xs">{format(new Date(b.travel_date), "dd MMM yyyy")}</span>
-                      </div>
-                      <span className="text-[9px] text-gray-400 font-black uppercase tracking-tighter mt-1 italic opacity-60">Manifest Entry</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-center">
-                    <div className={`mx-auto w-fit flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                      STATUS_CONFIG[b.status]?.bg || 'bg-gray-50'
-                    } ${
-                      STATUS_CONFIG[b.status]?.color || 'text-gray-400'
-                    } ${
-                      STATUS_CONFIG[b.status]?.border || 'border-gray-100'
-                    }`}>
-                      {b.status}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex flex-col items-end">
-                      <span className="font-black text-gray-900 text-sm tracking-tighter">{formatCurrency(b.total_amount, b.currency)}</span>
-                      <div className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest mt-1 ${
-                        b.payment_status === 'paid' ? 'text-emerald-500' :
-                        b.payment_status === 'partial' ? 'text-amber-500' :
-                        'text-rose-500'
-                      }`}>
-                        <div className={`w-1 h-1 rounded-full ${
-                           b.payment_status === 'paid' ? 'bg-emerald-500' :
-                           b.payment_status === 'partial' ? 'bg-amber-500' :
-                           'bg-rose-500'
-                        }`} />
-                        {b.payment_status}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex justify-end gap-2 opacity-1 transition-all">
-                      <button 
-                        onClick={() => setSelectedBooking(b)}
-                        className="h-10 w-10 rounded-xl bg-gray-50 text-gray-400 hover:bg-primary hover:text-white transition-all flex items-center justify-center border border-gray-100 active:scale-95 shadow-sm"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="h-10 w-10 rounded-xl bg-gray-50 text-gray-400 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center border border-gray-100 active:scale-95 shadow-sm"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Intelligence Pagination */}
-        {totalPages > 1 && (
-          <div className="px-8 py-6 border-t border-gray-50 bg-gray-50/20 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                 Sector {page + 1} of {totalPages} <span className="mx-2 text-gray-200">|</span> 
-                 Displaying {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} Intelligence Units
-               </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-                className="h-10 flex items-center gap-2 px-4 rounded-xl border border-gray-200 bg-white text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95"
+                onClick={exportCSV}
+                className="p-3 text-muted-foreground hover:text-foreground transition-colors bg-card border border-border rounded-xl"
+                title="Export Manifests"
               >
-                <ChevronLeft className="w-4 h-4" />
-                Prev Sector
+                <Download className="w-5 h-5" />
               </button>
-              <button 
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                className="h-10 flex items-center gap-2 px-4 rounded-xl border border-gray-200 bg-white text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95"
+              <Link href="/bookings/new">
+                <TacticalButton icon={Plus}>Initialize Mission</TacticalButton>
+              </Link>
+          </div>
+        }
+      />
+
+      {/* Strategic Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="md:col-span-5 relative group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
+          <input 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+            placeholder="Search manifests, guests, or reference codes..."
+            className="w-full h-14 pl-16 pr-6 bg-white border border-gray-100 rounded-[24px] text-sm font-bold tracking-tight shadow-sm focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none" 
+          />
+        </div>
+
+        <div className="md:col-span-7 flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+           <div className="relative flex-none">
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                className="h-14 pl-6 pr-12 bg-white border border-gray-100 rounded-[24px] text-[10px] font-black uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer outline-none"
+              >
+                <option value="all">CORRIDOR STATUS: ALL</option>
+                {Object.entries(STATUS_VARIANTS).map(([k, v]) => (
+                  <option key={k} value={k}>{v.label.toUpperCase()}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 pointer-events-none" />
+           </div>
+
+           <div className="relative flex-none">
+              <select 
+                value={paymentFilter} 
+                onChange={e => setPaymentFilter(e.target.value)}
+                className="h-14 pl-6 pr-12 bg-white border border-gray-100 rounded-[24px] text-[10px] font-black uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary/10 transition-all appearance-none cursor-pointer outline-none"
+              >
+                <option value="all">SETTLEMENT: ALL</option>
+                {Object.entries(PAYMENT_VARIANTS).map(([k, v]) => (
+                  <option key={k} value={k}>{v.label.toUpperCase()}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 pointer-events-none" />
+           </div>
+
+           <button 
+              onClick={() => fetchBookings()}
+              className="h-14 w-14 flex-none flex items-center justify-center bg-white border border-gray-100 rounded-[24px] text-gray-400 hover:text-primary transition-all active:scale-95 shadow-sm"
+            >
+              <RefreshCw className={cn("w-5 h-5", loading && "animate-spin")} />
+           </button>
+
+           <div className="flex-grow text-right self-center pr-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <span className="text-primary">{total}</span> ACTIVE NODES DETECTED
+              </p>
+           </div>
+        </div>
+      </div>
+
+      {/* Deployment Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <AnimatePresence mode="popLayout">
+          {loading ? (
+             Array.from({ length: 8 }).map((_, i) => (
+               <div key={i} className="h-[280px] rounded-3xl bg-card border border-border/50 animate-pulse" />
+             ))
+          ) : bookings.length === 0 ? (
+            <div className="col-span-full py-32 flex flex-col items-center justify-center gap-8 bg-card rounded-[40px] border border-dashed border-border/60">
+               <div className="w-24 h-24 rounded-[36px] bg-muted/50 border border-border flex items-center justify-center text-muted-foreground/20">
+                  <Briefcase className="w-12 h-12" />
+               </div>
+               <div className="text-center space-y-2">
+                  <p className="text-lg font-bold text-foreground uppercase tracking-tight">No Manifests Found</p>
+                  <p className="text-sm font-medium text-muted-foreground max-w-[250px] mx-auto opacity-60">No active bookings match the current synchronization criteria.</p>
+               </div>
+               <Link href="/bookings/new">
+                  <TacticalButton variant="outline">Initialize First Entry</TacticalButton>
+               </Link>
+            </div>
+          ) : bookings.map((booking) => {
+            const statusCfg = STATUS_VARIANTS[booking.status] || { label: booking.status, variant: "neutral", icon: Clock };
+            const paymentCfg = PAYMENT_VARIANTS[booking.payment_status] || { label: booking.payment_status, variant: "neutral" };
+            
+            return (
+              <MissionCard 
+                key={booking.id}
+                label={booking.booking_ref || `REF: ${booking.id.split("-")[0].toUpperCase()}`}
+                status={booking.status === 'confirmed' ? 'active' : booking.status === 'pending' ? 'calibration' : 'draft'}
+                className="flex flex-col h-full hover:scale-[1.02] active:scale-[0.98] transition-transform cursor-pointer"
+              >
+                <div onClick={() => setSelectedBooking(booking)} className="flex flex-col h-full gap-5">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+                        {booking.clients?.full_name || "Anonymous Guest"}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <AssetBadge label={booking.clients?.nationality || "Global"} variant="neutral" dot={false} />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{booking.clients?.email?.split('@')[0]}</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-2xl border border-border/40">
+                       <statusCfg.icon className={cn("w-5 h-5", 
+                         statusCfg.variant === 'success' ? 'text-emerald-500' : 
+                         statusCfg.variant === 'warning' ? 'text-amber-500' :
+                         statusCfg.variant === 'error' ? 'text-rose-500' : 'text-primary'
+                       )} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-2xl border border-border/30">
+                       <MapPin className="w-4 h-4 text-primary" />
+                       <div className="flex flex-col">
+                          <span className="text-xs font-bold text-foreground line-clamp-1">{booking.packages?.name || "Custom Plan"}</span>
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{booking.packages?.destination || "Global"}</span>
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <MonoSection 
+                        label="Dispatch" 
+                        value={format(new Date(booking.travel_date), "dd MMM")} 
+                        className="bg-card/50"
+                      />
+                      <MonoSection 
+                        label="Financials" 
+                        value={formatCurrency(booking.total_amount, booking.currency)}
+                        className="bg-card/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t border-border/40 flex items-center justify-between">
+                    <AssetBadge label={statusCfg.label} variant={statusCfg.variant} />
+                    <AssetBadge label={paymentCfg.label} variant={paymentCfg.variant} dot={false} />
+                  </div>
+                </div>
+              </MissionCard>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Operational Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-10 border-t border-border">
+           <div className="flex items-center gap-4">
+              <span className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                Sector Mapping Progress
+              </span>
+              <div className="w-48 h-1.5 bg-muted rounded-full overflow-hidden">
+                 <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${((page + 1) / totalPages) * 100}%` }}
+                    className="h-full bg-primary"
+                 />
+              </div>
+              <span className="text-[10px] font-mono font-bold text-primary">
+                {page + 1} / {totalPages}
+              </span>
+           </div>
+
+           <div className="flex items-center gap-3">
+              <TacticalButton 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setPage(p => Math.max(0, p - 1))} 
+                disabled={page === 0}
+                icon={ChevronLeft}
+              >
+                Prev Sector
+              </TacticalButton>
+              <TacticalButton 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} 
+                disabled={page >= totalPages - 1}
+                icon={ChevronRight}
               >
                 Next Sector
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+              </TacticalButton>
+           </div>
+        </div>
+      )}
 
-      {/* Manifest Detail Overlay */}
+      {/* Mission Briefing Overlay */}
       <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[90vh] rounded-[3rem] p-0 border-none shadow-2xl bg-white overflow-hidden flex flex-col">
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 overflow-hidden bg-gray-50 border-0 shadow-2xl rounded-[32px]">
           {selectedBooking && (
             <div className="flex flex-col h-full">
-              {/* Header section with cover effect */}
-              <div className="relative h-48 flex items-end">
-                 <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-indigo-950" />
-                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#fff 0.5px, transparent 0.5px)", backgroundSize: "10px 10px" }} />
-                 
-                 <div className="relative w-full p-10 flex items-end justify-between overflow-hidden">
-                    <div className="flex items-center gap-6">
-                       <div className="w-20 h-20 rounded-[2rem] bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 text-white shadow-2xl">
-                          <Shield className="w-10 h-10" />
-                       </div>
-                       <div>
-                          <div className="flex items-center gap-3 mb-2">
-                             <span className="font-mono text-[10px] font-black text-primary bg-white px-3 py-1.5 rounded-full tracking-widest">
-                               MANIFEST REF: #{selectedBooking.booking_ref || selectedBooking.id.split("-")[0].toUpperCase()}
-                             </span>
-                             <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/20 bg-white/10 text-white backdrop-blur-sm`}>
-                                STATE: {selectedBooking.status}
-                             </div>
-                          </div>
-                          <h2 className="text-4xl font-black text-white tracking-tighter leading-none">
+               {/* Elite Header */}
+               <div className="px-12 py-8 bg-brand-dark flex items-center justify-between shadow-md z-10">
+                  <div className="flex items-center gap-8">
+                     <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shadow-2xl backdrop-blur-md">
+                        <Shield className="w-8 h-8" />
+                     </div>
+                     <div>
+                        <div className="flex items-center gap-3 text-primary font-bold uppercase tracking-wider text-[10px] mb-2">
+                            <Zap className="w-3.5 h-3.5 fill-current" />
+                            Mission Manifest #{selectedBooking.booking_ref || selectedBooking.id.split("-")[0].toUpperCase()}
+                        </div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight uppercase">
                             {selectedBooking.clients?.full_name}
-                          </h2>
-                          <div className="mt-2 flex items-center gap-4 text-white/50 text-[10px] font-black uppercase tracking-widest">
-                             <span className="flex items-center gap-1.5"><Globe className="w-3 h-3" /> Origin: {selectedBooking.clients?.nationality || 'International'}</span>
-                             <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> Registered: {format(new Date(selectedBooking.created_at), "dd MMM yy")}</span>
-                          </div>
-                       </div>
-                    </div>
-                    <button 
-                      onClick={() => setSelectedBooking(null)}
-                      className="absolute top-8 right-8 p-3 hover:bg-white/10 rounded-full transition-all text-white/40"
-                    >
-                      <X className="w-6 h-6" />
-                    </button>
-                 </div>
-              </div>
+                        </h2>
+                     </div>
+                  </div>
 
-              {/* Main Intel Body */}
-              <div className="flex-1 overflow-y-auto p-10 bg-gray-50/50">
-                 <div className="grid grid-cols-12 gap-8">
-                    {/* Information Cluster */}
-                    <div className="col-span-8 space-y-8">
-                       <div className="grid grid-cols-2 gap-6">
-                           {[
-                             { label: "Traversal Corridor", value: selectedBooking.packages?.name || "Bespoke Itinerary", icon: MapPin, detail: selectedBooking.packages?.destination || "Across Tanzania" },
-                             { label: "Deployment Cycle", value: `${format(new Date(selectedBooking.travel_date), "dd MMM")} - ${format(new Date(selectedBooking.return_date), "dd MMM yyyy")}`, icon: Calendar, detail: "Active Temporal Window" },
-                             { label: "Asset Manifest", value: `${selectedBooking.num_adults} OPERATIVE(S)`, icon: Users, detail: `${selectedBooking.num_children} JUNIOR ASSETS` },
-                             { label: "Financial Status", value: formatCurrency(selectedBooking.total_amount, selectedBooking.currency), icon: DollarSign, detail: `SETTLEMENT: ${selectedBooking.payment_status.toUpperCase()}` },
-                           ].map((box, i) => (
-                             <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm transition-all hover:shadow-md group">
-                               <div className="flex items-center gap-4 mb-4">
-                                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                                     <box.icon className="w-4 h-4" />
-                                  </div>
-                                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{box.label}</span>
-                               </div>
-                               <p className="text-xl font-black text-gray-900 tracking-tighter mb-1">{box.value}</p>
-                               <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">{box.detail}</p>
-                             </div>
-                           ))}
-                       </div>
+                  <div className="flex items-center gap-6">
+                      <div className="px-5 py-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md text-right">
+                         <p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1">Financial State</p>
+                         <div className="flex items-center justify-end gap-2 text-emerald-400 font-mono font-bold text-lg">
+                            <CreditCard className="w-4 h-4" />
+                            {formatCurrency(selectedBooking.total_amount, selectedBooking.currency)}
+                         </div>
+                      </div>
+                      <button 
+                        onClick={() => setSelectedBooking(null)}
+                        className="w-12 h-12 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center text-white/40 transition-all border border-white/10"
+                      >
+                         <X className="w-6 h-6" />
+                      </button>
+                  </div>
+               </div>
 
-                       {/* Critical Comms */}
-                       <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden">
-                          <div className="absolute top-0 right-0 p-8 opacity-5">
-                             <Activity className="w-24 h-24 text-gray-900" />
-                          </div>
-                          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                             <Shield className="w-3 h-3 text-primary" /> Sector Communication Protocols
-                          </h4>
-                          <div className="space-y-6">
-                             <div className="flex items-center justify-between group">
-                                <div className="flex items-center gap-4">
-                                   <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                      <Zap className="w-4 h-4" />
-                                   </div>
-                                   <div>
-                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Primary Intel Channel</p>
-                                      <p className="font-bold text-gray-800 tracking-tight">{selectedBooking.clients?.email}</p>
-                                   </div>
-                                </div>
-                                <button className="opacity-0 group-hover:opacity-100 transition-all text-[10px] font-black text-primary uppercase underline tracking-widest">Connect</button>
-                             </div>
-                             <div className="w-full h-px bg-gray-50" />
-                             <div className="flex items-center justify-between group">
-                                <div className="flex items-center gap-4">
-                                   <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                      <Activity className="w-4 h-4" />
-                                   </div>
-                                   <div>
-                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Secure Comms Line</p>
-                                      <p className="font-bold text-gray-800 tracking-tight">{selectedBooking.clients?.phone || "NO COMMS REGISTERED"}</p>
-                                   </div>
-                                </div>
-                                <button className="opacity-0 group-hover:opacity-100 transition-all text-[10px] font-black text-primary uppercase underline tracking-widest">Dial Sector</button>
-                             </div>
-                          </div>
-                       </div>
-                    </div>
+               <div className="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-12 bg-white/80 backdrop-blur-xl">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                     {/* Identity Profile */}
+                     <div className="lg:col-span-2 space-y-10">
+                        <div className="space-y-6">
+                           <h3 className="text-sm font-black text-foreground uppercase tracking-[0.3em] flex items-center gap-4">
+                              <span className="w-8 h-px bg-primary/30" />
+                              Strategic Vector Parameters
+                           </h3>
 
-                    {/* Operational Sidebar */}
-                    <div className="col-span-4 space-y-8">
-                       <div className="bg-gray-900 p-8 rounded-[2.5rem] shadow-2xl text-white">
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-6">Transition Override</h4>
-                          <div className="space-y-3">
-                             {["pending","confirmed","completed","cancelled"].map(s => (
-                               <button 
-                                 key={s}
-                                 onClick={() => updateStatus(selectedBooking.id, s)}
-                                 disabled={updating === selectedBooking.id}
-                                 className={`w-full py-4 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center justify-between group ${
-                                   selectedBooking.status === s 
-                                   ? 'bg-primary text-white border-primary shadow-xl shadow-primary/20' 
-                                   : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:border-white/30'
-                                 }`}
-                               >
-                                 {s}
-                                 {selectedBooking.status === s && <CheckCircle className="w-4 h-4" />}
-                                 {selectedBooking.status !== s && <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />}
-                               </button>
-                             ))}
-                          </div>
-                          
-                          <div className="mt-8 pt-8 border-t border-white/10">
-                             <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                                <div className="flex items-center gap-2 mb-2">
-                                   <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                                   <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Security Clearance Required</span>
-                                </div>
-                                <p className="text-[10px] text-white/40 font-medium leading-relaxed italic">
-                                  State transitions are logged and irreversible without director-level privileges. Ensure all financial parameters are verified before proceeding with sector completion.
-                                </p>
-                             </div>
-                          </div>
-                       </div>
+                           <div className="grid grid-cols-2 gap-8">
+                              <MissionCard className="bg-white border-0 shadow-xl shadow-black/5 p-8" label="Itinerary Node">
+                                 <div className="flex flex-col gap-6">
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                                       <MapPin className="w-6 h-6" />
+                                    </div>
+                                    <div className="space-y-1">
+                                       <p className="text-xl font-bold text-foreground">{selectedBooking.packages?.name || "Bespoke Request"}</p>
+                                       <p className="text-xs font-black text-primary uppercase tracking-widest">{selectedBooking.packages?.destination || "Global Routing"}</p>
+                                    </div>
+                                 </div>
+                              </MissionCard>
 
-                       <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Mission Log Notes</h4>
-                          <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100 text-sm font-medium text-gray-700 leading-relaxed min-h-[120px]">
-                             {selectedBooking.special_requests || "No mission-critical exceptions or tactical adjustments logged for this operative."}
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-              </div>
+                              <MissionCard className="bg-white border-0 shadow-xl shadow-black/5 p-8" label="Temporal Window">
+                                 <div className="flex flex-col gap-6">
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                                       <Calendar className="w-6 h-6" />
+                                    </div>
+                                    <div className="space-y-1">
+                                       <p className="text-xl font-bold text-foreground">
+                                          {format(new Date(selectedBooking.travel_date), "dd MMM")} — {format(new Date(selectedBooking.return_date), "dd MMM yyyy")}
+                                       </p>
+                                       <p className="text-xs font-black text-emerald-600 uppercase tracking-widest">Active Dispatch Window</p>
+                                    </div>
+                                 </div>
+                              </MissionCard>
+                           </div>
+                        </div>
+
+                        <div className="space-y-6">
+                           <h3 className="text-sm font-black text-foreground uppercase tracking-[0.3em] flex items-center gap-4">
+                              <span className="w-8 h-px bg-primary/30" />
+                              Technical Briefing Notes
+                           </h3>
+                           <div className="p-10 bg-slate-900 rounded-[3rem] border border-slate-800 shadow-2xl relative overflow-hidden group">
+                              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                 <FileSearch className="w-32 h-32 text-white" />
+                              </div>
+                              <div className="relative font-mono text-sm text-white/70 leading-relaxed italic border-l-4 border-primary pl-8 py-2">
+                                 {selectedBooking.special_requests || "NO OPERATIONAL EXCEPTIONS OR TACTICAL ADJUSTMENTS DECLARED FOR THIS MISSION SECTOR."}
+                              </div>
+                              <div className="mt-8 flex gap-3">
+                                 <AssetBadge label={`Adults: ${selectedBooking.num_adults}`} variant="info" dot={false} />
+                                 <AssetBadge label={`Children: ${selectedBooking.num_children}`} variant="warning" dot={false} />
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     {/* Authorization Protocol */}
+                     <div className="space-y-10">
+                        <div className="bg-white p-10 rounded-[2.5rem] border border-border shadow-2xl space-y-8">
+                           <div>
+                              <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                                 <Shield className="w-4 h-4" /> Authorization State
+                              </h3>
+                              
+                              <div className="space-y-3">
+                                 {Object.entries(STATUS_VARIANTS).map(([k, cfg]) => (
+                                    <button 
+                                      key={k}
+                                      onClick={() => updateStatus(selectedBooking.id, k)}
+                                      disabled={updating === selectedBooking.id}
+                                      className={cn(
+                                        "w-full p-5 rounded-2xl flex items-center justify-between border transition-all duration-300 group",
+                                        selectedBooking.status === k 
+                                          ? "bg-primary border-primary text-white shadow-xl shadow-primary/20" 
+                                          : "bg-gray-50 border-gray-100 text-gray-400 hover:border-primary/30 hover:bg-white"
+                                      )}
+                                    >
+                                       <div className="flex items-center gap-4">
+                                          <div className={cn("p-2 rounded-xl transition-colors", 
+                                             selectedBooking.status === k ? "bg-white/20" : "bg-white shadow-sm border border-border"
+                                          )}>
+                                             <cfg.icon className="w-4 h-4" />
+                                          </div>
+                                          <span className="text-[11px] font-black uppercase tracking-[0.2em]">{cfg.label}</span>
+                                       </div>
+                                       {selectedBooking.status === k ? (
+                                          <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                       ) : (
+                                          <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
+                                       )}
+                                    </button>
+                                 ))}
+                              </div>
+                           </div>
+
+                           <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100/50">
+                              <p className="text-[10px] font-bold text-amber-800/60 uppercase tracking-widest leading-relaxed">
+                                 <AlertTriangle className="w-3.5 h-3.5 inline mr-1.5" />
+                                 State transitions are broadcasted across the logistics network and affect regional inventory allocation.
+                              </p>
+                           </div>
+                        </div>
+
+                        <div className="bg-brand-dark p-8 rounded-[2.5rem] shadow-2xl text-white space-y-6">
+                           <h3 className="text-[10px] font-black uppercase tracking-widest text-primary/60">Communication Matrix</h3>
+                           <div className="space-y-4">
+                              <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                    <Globe className="w-5 h-5" />
+                                 </div>
+                                 <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Digital Channel</span>
+                                    <span className="text-sm font-bold truncate max-w-[150px]">{selectedBooking.clients?.email}</span>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                    <Activity className="w-5 h-5" />
+                                 </div>
+                                 <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Tactical Voice</span>
+                                    <span className="text-sm font-bold">{selectedBooking.clients?.phone || "UNREGISTERED"}</span>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
           )}
         </DialogContent>
@@ -506,4 +494,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-

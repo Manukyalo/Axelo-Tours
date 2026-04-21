@@ -14,6 +14,233 @@ import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("calibration");
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    "Initializing Axelo Core Kernel v4.2.0...",
+    "Neural Engine Status: OPTIMAL",
+    "Global Manifest Sink: SYNCHRONIZED",
+    "Awaiting command input..."
+  ]);
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "calibration":
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-10"
+          >
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 group-hover:text-indigo-600 transition-colors">Spectral Cache Rate</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Determine the frequency of global destination indexing</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">300ms / High</span>
+                    <div className="w-12 h-6 bg-gray-900 rounded-full p-1 flex justify-end">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-50" />
+
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 group-hover:text-fuchsia-600 transition-colors">Neural Margin Logic</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Allow AI to auto-calibrate cost sheet markups</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-fuchsia-600 uppercase tracking-widest">Enabled / Active</span>
+                    <div className="w-12 h-6 bg-fuchsia-600 rounded-full p-1 flex justify-end">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-50" />
+
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 group-hover:text-indigo-600 transition-colors">Multi-Region Redundancy</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Force synchronization across secondary server nodes</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Global Standby</span>
+                    <div className="w-12 h-6 bg-gray-100 rounded-full p-1">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm border border-gray-200" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="pt-10">
+                <h4 className="text-xs font-black text-gray-900 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                    <Key className="w-3.5 h-3.5 text-indigo-600 stroke-[3px]" />
+                    Infrastructure Access Tokens
+                </h4>
+                <div className="bg-gray-50 p-6 rounded-[32px] border border-gray-100 flex items-center justify-between group hover:border-indigo-100 transition-all">
+                    <div className="flex items-center gap-4">
+                        <div className="w-3 h-3 bg-indigo-600 rounded-full animate-pulse" />
+                        <div className="font-mono text-xs text-gray-400 tracking-widest">ax_live_09918273645...</div>
+                    </div>
+                    <button className="text-[9px] font-black text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity underline decoration-2 underline-offset-4">Regenerate Key</button>
+                </div>
+            </div>
+          </motion.div>
+        );
+      case "security":
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-10"
+          >
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Advanced RLS Integrity</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Enforce row-level security across all manifest queries</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Shield Enabled</span>
+                    <div className="w-12 h-6 bg-emerald-600 rounded-full p-1 flex justify-end">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-50" />
+
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Two-Factor Authentication</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Require hardware key or biometric validation for admin access</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Active</span>
+                    <div className="w-12 h-6 bg-gray-900 rounded-full p-1 flex justify-end">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-50" />
+
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Audit Log Persistence</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Store system changes for a minimum of 365 days</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Permanent</span>
+                    <div className="w-12 h-6 bg-gray-100 rounded-full p-1 flex justify-end">
+                        <div className="w-4 h-4 bg-white text-emerald-500 rounded-full shadow-sm border border-emerald-100 flex items-center justify-center">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </motion.div>
+        );
+      case "financial":
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-10"
+          >
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Global Margin Calibration</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Default profit margin applied across core safari packages</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <input 
+                        type="text" 
+                        value="25%" 
+                        readOnly 
+                        className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-xs font-black text-indigo-600 w-20 text-center"
+                    />
+                </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-50" />
+
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Currency Sync Rate</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Auto-refresh exchange rates for multi-currency manifests</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-fuchsia-600 uppercase tracking-widest">Hourly / Auto</span>
+                    <div className="w-12 h-6 bg-fuchsia-600 rounded-full p-1 flex justify-end">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-50" />
+
+            <div className="flex items-center justify-between group">
+                <div>
+                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Fiscal Year Offset</h4>
+                    <p className="text-[10px] font-medium text-gray-400 italic">Calibration for internal financial audit cycles</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">JAN 01</span>
+                </div>
+            </div>
+          </motion.div>
+        );
+      case "users":
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
+            <div className="bg-gray-50 p-6 rounded-[32px] border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active System Operators</h4>
+                    <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-black uppercase text-indigo-600 border border-indigo-100 bg-white">Add Entity</Button>
+                </div>
+                <div className="space-y-4">
+                    {[
+                        { name: "Manu Axelo", role: "Root Admin", status: "Active" },
+                        { name: "Support Node 01", role: "Logistics Specialist", status: "Active" },
+                        { name: "Zara AI Engine", role: "Content Architect", status: "Standalone" }
+                    ].map((user, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center text-white font-bold text-xs italic">
+                                    {user.name[0]}
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black text-gray-900 uppercase tracking-tight">{user.name}</p>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{user.role}</p>
+                                </div>
+                            </div>
+                            <span className="text-[8px] font-black px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full uppercase tracking-tighter border border-emerald-100">
+                                {user.status}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+          </motion.div>
+        );
+      default:
+        return <div className="text-gray-300 italic font-bold">Content for {activeTab} coming soon...</div>;
+    }
+  };
+
+  const handleDeployPatch = () => {
+      const toastId = "deploy";
+      toast.loading("Encrypting logic clusters...", { id: toastId });
+      setTimeout(() => {
+          toast.success("System Patch Deployed: v4.2.1-stable", { id: toastId });
+      }, 2000);
+  };
 
   return (
     <div className="p-10 pb-32 space-y-12 bg-[#fafafa] min-h-screen">
@@ -30,9 +257,13 @@ export default function SettingsPage() {
                 Logic Kernels Operational
             </div>
           </div>
-          <h1 className="text-6xl font-black text-gray-900 tracking-tighter leading-none mb-6 uppercase italic">
+          <motion.h1 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-6xl font-black text-gray-900 tracking-tighter leading-none mb-6 uppercase italic"
+          >
             System <span className="text-indigo-600 font-black">Core</span>
-          </h1>
+          </motion.h1>
           <p className="text-gray-500 font-medium max-w-2xl text-xl leading-snug italic">
             Managing the neural foundation of the Axelo network. Orchestrating API transmissions, security integrity, and high-frequency financial calibration.
           </p>
@@ -40,6 +271,7 @@ export default function SettingsPage() {
 
         <div className="flex items-center gap-4">
             <Button 
+                onClick={() => setIsTerminalOpen(true)}
                 variant="outline"
                 className="gap-3 border-gray-200 text-gray-900 bg-white hover:bg-gray-50 font-black uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-sm transition-all"
             >
@@ -47,6 +279,7 @@ export default function SettingsPage() {
                 Root Terminal
             </Button>
             <Button 
+                onClick={handleDeployPatch}
                 className="gap-3 bg-gray-900 hover:bg-black text-white font-black uppercase tracking-widest text-[11px] h-16 px-10 rounded-[28px] shadow-2xl shadow-gray-200 transition-all border-none relative overflow-hidden group"
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-fuchsia-400 opacity-20" />
@@ -64,7 +297,13 @@ export default function SettingsPage() {
               { label: "API Transmission", value: "14ms", trend: "Optimal", icon: Activity, color: "fuchsia" },
               { label: "Logic Cache", value: "Dynamic", trend: "Active", icon: Database, color: "amber" }
           ].map((stat, i) => (
-              <div key={i} className="group bg-white p-10 rounded-[48px] border border-gray-100 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-500 relative overflow-hidden">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.1 }}
+                className="group bg-white p-10 rounded-[48px] border border-gray-100 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-500 relative overflow-hidden"
+              >
                    <div className={`absolute top-0 right-0 w-32 h-32 bg-${stat.color}-50/50 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700`} />
                    
                    <div className="flex items-start justify-between mb-10 relative z-10">
@@ -83,7 +322,7 @@ export default function SettingsPage() {
                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-2">{stat.label}</p>
                        <h3 className="text-4xl font-black text-gray-900 tracking-tighter uppercase italic">{stat.value}</h3>
                    </div>
-              </div>
+              </motion.div>
           ))}
       </div>
 
@@ -120,7 +359,7 @@ export default function SettingsPage() {
 
           {/* Configuration Panel */}
           <div className="lg:col-span-3 space-y-8">
-              <div className="bg-white rounded-[64px] border border-gray-100 shadow-3xl shadow-gray-200/50 p-12 relative overflow-hidden">
+              <div className="bg-white rounded-[64px] border border-gray-100 shadow-3xl shadow-gray-200/50 p-12 relative overflow-hidden min-h-[600px]">
                 <div className="absolute top-0 right-10 flex gap-2">
                     <div className="w-1.5 h-6 bg-indigo-600 rounded-b-full opacity-40" />
                     <div className="w-1.5 h-8 bg-indigo-600 rounded-b-full opacity-20" />
@@ -131,65 +370,11 @@ export default function SettingsPage() {
                     <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic mb-2">Core Optimization</h2>
                     <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-12">Calibrating neural infrastructure and system parameters</p>
 
-                    <div className="space-y-10">
-                        {/* Setting Item */}
-                        <div className="flex items-center justify-between group">
-                            <div>
-                                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 group-hover:text-indigo-600 transition-colors">Spectral Cache Rate</h4>
-                                <p className="text-[10px] font-medium text-gray-400 italic">Determine the frequency of global destination indexing</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">300ms / High</span>
-                                <div className="w-12 h-6 bg-gray-900 rounded-full p-1 flex justify-end">
-                                    <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
-                                </div>
-                            </div>
+                    <AnimatePresence mode="wait">
+                        <div key={activeTab}>
+                            {renderTabContent()}
                         </div>
-
-                        <div className="w-full h-px bg-gray-50" />
-
-                        <div className="flex items-center justify-between group">
-                            <div>
-                                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 group-hover:text-fuchsia-600 transition-colors">Neural Margin Logic</h4>
-                                <p className="text-[10px] font-medium text-gray-400 italic">Allow AI to auto-calibrate cost sheet markups</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] font-black text-fuchsia-600 uppercase tracking-widest">Enabled / Active</span>
-                                <div className="w-12 h-6 bg-fuchsia-600 rounded-full p-1 flex justify-end">
-                                    <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="w-full h-px bg-gray-50" />
-
-                        <div className="flex items-center justify-between group">
-                            <div>
-                                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 group-hover:text-indigo-600 transition-colors">Multi-Region Redundancy</h4>
-                                <p className="text-[10px] font-medium text-gray-400 italic">Force synchronization across secondary server nodes</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Global Standby</span>
-                                <div className="w-12 h-6 bg-gray-100 rounded-full p-1">
-                                    <div className="w-4 h-4 bg-white rounded-full shadow-sm border border-gray-200" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pt-10">
-                            <h4 className="text-xs font-black text-gray-900 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                                <Key className="w-3.5 h-3.5 text-indigo-600 stroke-[3px]" />
-                                Infrastructure Access Tokens
-                            </h4>
-                            <div className="bg-gray-50 p-6 rounded-[32px] border border-gray-100 flex items-center justify-between group hover:border-indigo-100 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-3 h-3 bg-indigo-600 rounded-full animate-pulse" />
-                                    <div className="font-mono text-xs text-gray-400 tracking-widest">ax_live_09918273645...</div>
-                                </div>
-                                <button className="text-[9px] font-black text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity underline decoration-2 underline-offset-4">Regenerate Key</button>
-                            </div>
-                        </div>
-                    </div>
+                    </AnimatePresence>
                 </div>
               </div>
 
@@ -219,6 +404,59 @@ export default function SettingsPage() {
               </div>
           </div>
       </div>
+
+      {/* Root Terminal Modal */}
+      <Dialog open={isTerminalOpen} onOpenChange={setIsTerminalOpen}>
+        <DialogContent className="max-w-4xl bg-gray-950 border-white/10 rounded-[40px] p-0 overflow-hidden shadow-[0_0_100px_rgba(79,70,229,0.2)]">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+                        <Terminal className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-black uppercase tracking-widest text-xs">Root Terminal</h3>
+                        <p className="text-white/40 text-[9px] uppercase font-bold tracking-tighter italic">Secured Shell Access v4.2</p>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-rose-500/20 border border-rose-500/40" />
+                    <div className="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/40" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
+                </div>
+            </div>
+            <div className="p-10 font-mono text-[11px] leading-relaxed space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar bg-black/40">
+                {terminalLogs.map((log, i) => (
+                    <div key={i} className="flex gap-4">
+                        <span className="text-indigo-500/40 shrink-0 select-none">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
+                        <span className={log.includes("OPTIMAL") ? "text-emerald-400" : "text-white/80"}>{log}</span>
+                    </div>
+                ))}
+                <div className="flex gap-4 items-center">
+                    <span className="text-indigo-500 select-none">$</span>
+                    <input 
+                        autoFocus
+                        className="bg-transparent border-none outline-none text-white w-full caret-indigo-500"
+                        placeholder="type 'help' for available commands..."
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                const val = (e.target as any).value;
+                                setTerminalLogs([...terminalLogs, `$ ${val}`, `Command '${val}' executed on central clusters.`]);
+                                (e.target as any).value = "";
+                            }
+                        }}
+                    />
+                </div>
+            </div>
+            <div className="p-6 bg-white/5 border-t border-white/5 text-center">
+                <p className="text-[9px] font-black uppercase text-white/20 tracking-[0.5em] italic">Authorized Entities Only • Persistent Monitoring Enabled</p>
+            </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+// Helper components would be better here, but maintaining the structure of the original file for now.
+// Add imports for Dialog components if missing...
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import toast from "react-hot-toast";

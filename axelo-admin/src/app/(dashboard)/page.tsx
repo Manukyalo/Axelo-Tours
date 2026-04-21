@@ -151,22 +151,22 @@ export default function AdminDashboard() {
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 px-2">
         <div>
           <div className="flex items-center gap-2 mb-3">
-             <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-primary/70">Strategic Command Hub</span>
+             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+             <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Admin Dashboard</span>
           </div>
-          <h1 className="text-5xl font-black text-gray-900 tracking-tightest flex items-center gap-5 leading-none">
-             Operational Central
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-2">
+             Overview
           </h1>
-          <p className="text-gray-400 text-lg mt-3 font-bold italic opacity-70">
-            Real-time synchronization of guest trajectories and financial throughput.
+          <p className="text-gray-500 text-base">
+            Monitor your recent bookings, revenue, and overall business performance.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/bookings" className="flex items-center h-14 gap-3 bg-white text-gray-900 px-8 rounded-[20px] text-xs font-black uppercase tracking-widest hover:bg-gray-50 border border-gray-100 transition-all active:scale-95 shadow-sm">
-            Operational Hub
+          <Link href="/bookings" className="flex items-center h-12 gap-2 bg-white text-gray-700 px-6 rounded-xl text-sm font-semibold hover:bg-gray-50 border border-gray-200 transition-all shadow-sm">
+            View All Bookings
           </Link>
-          <Link href="/bookings/new" className="flex items-center h-14 gap-3 bg-gray-900 text-white px-8 rounded-[20px] text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-gray-200">
-            <Plus className="w-5 h-5 stroke-[3px]" /> Deploy Booking
+          <Link href="/bookings/new" className="flex items-center h-12 gap-2 bg-gray-900 text-white px-6 rounded-xl text-sm font-semibold hover:bg-gray-800 transition-all shadow-md">
+            <Plus className="w-4 h-4" /> New Booking
           </Link>
         </div>
       </div>
@@ -174,43 +174,46 @@ export default function AdminDashboard() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {[
-          { label: "Active Revenue Pipeline", value: formatCurrency(thisMonthKES, "KES"), icon: TrendingUp, color: "emerald", sub: "30-Day Velocity", trend: "+8.4%" },
-          { label: "Booking Transmissions", value: String(totalBookings), icon: CalendarCheck, color: "primary", sub: "Total Life Cycle", trend: "+12.1%" },
-          { label: "Critical Actions Required", value: String(pendingCount), icon: Clock, color: "amber", sub: "Pending Manifests", trend: "Attention Needed" },
-          { label: "Available Inventory", value: String(activePackages), icon: Package, color: "indigo", sub: "Live Experiences", trend: `${packages.length} Total` },
+          { label: "Monthly Revenue", value: formatCurrency(thisMonthKES, "KES"), icon: TrendingUp, color: "emerald", sub: "Last 30 Days", trend: "+8.4%" },
+          { label: "Total Bookings", value: String(totalBookings), icon: CalendarCheck, color: "emerald", sub: "All time", trend: "+12.1%" },
+          { label: "Action Required", value: String(pendingCount), icon: Clock, color: "amber", sub: "Pending Bookings", trend: "Attention Needed" },
+          { label: "Active Packages", value: String(activePackages), icon: Package, color: "indigo", sub: "Available Tours", trend: `${packages.length} Total` },
         ].map(({ label, value, icon: Icon, color, sub, trend }) => (
-          <div key={label} className="group bg-white p-10 rounded-[44px] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all hover:-translate-y-2 relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-gray-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-             <div className="flex items-start justify-between mb-8">
-                <div className={`w-16 h-16 rounded-[24px] bg-${color === 'primary' ? 'emerald' : color}-50 flex items-center justify-center text-${color === 'primary' ? 'emerald' : color}-600 group-hover:scale-110 transition-all shadow-sm border border-${color === 'primary' ? 'emerald' : color}-100/50`}>
-                   <Icon className="w-8 h-8 stroke-[1.5px]" />
+          <div key={label} className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm transition-all hover:shadow-md relative overflow-hidden">
+             <div className="flex items-start justify-between mb-6">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-sm border ${
+                  color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' :
+                  color === 'amber' ? 'bg-amber-50 text-amber-600 border-amber-100/50' :
+                  'bg-indigo-50 text-indigo-600 border-indigo-100/50'
+                }`}>
+                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="text-right">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-2">{label}</p>
+                   <p className="text-xs font-semibold text-gray-500 tracking-wider mb-2">{label}</p>
                    {trend && (
-                     <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${trend.includes('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} border border-current/10`}>
+                     <span className={`text-[10px] font-semibold border rounded-full px-2.5 py-0.5 ${trend.includes('+') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                         {trend}
                      </span>
                    )}
                 </div>
              </div>
-             <p className="text-4xl font-black text-gray-900 tracking-tightest mb-2 leading-none">
+             <p className="text-3xl font-bold text-gray-900 mb-1">
                 {value}
              </p>
-             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter opacity-60 italic">{sub}</p>
+             <p className="text-sm font-medium text-gray-500">{sub}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white rounded-[32px] border border-gray-100 shadow-sm p-8 overflow-hidden hover:shadow-xl hover:shadow-gray-100 transition-all">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
           <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Financial Throughput</h2>
-                <h3 className="text-xl font-black text-gray-900 tracking-tighter">Gross Revenue velocity (KES)</h3>
+                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Financial Overview</h2>
+                <h3 className="text-xl font-bold text-gray-900">Gross Revenue (KES)</h3>
               </div>
-              <div className="bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
-                  <span className="text-[10px] font-black text-gray-500 uppercase">Last 30 Days Cycle</span>
+              <div className="bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                  <span className="text-xs font-medium text-gray-600">Last 30 Days</span>
               </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
@@ -244,10 +247,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Donut Chart */}
-        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:shadow-gray-100 transition-all">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <div className="mb-6">
-              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Operational Pulse</h2>
-              <h3 className="text-xl font-black text-gray-900 tracking-tighter">Status Distribution</h3>
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Bookings Overview</h2>
+              <h3 className="text-xl font-bold text-gray-900">Status Distribution</h3>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -274,79 +277,68 @@ export default function AdminDashboard() {
           <div className="mt-4 grid grid-cols-2 gap-2">
               {statusCounts.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{s.name}: {s.value}</span>
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="text-xs font-medium text-gray-600 capitalize">{s.name}: {s.value}</span>
                 </div>
               ))}
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:shadow-gray-100 transition-all">
-        <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
           <div>
-              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Operational Queue</h2>
-              <h3 className="text-xl font-black text-gray-900 tracking-tighter">Synchronized Manifest</h3>
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Recent Activity</h2>
+              <h3 className="text-lg font-bold text-gray-900">Latest Bookings</h3>
           </div>
-          <Link href="/bookings" className="h-10 px-6 flex items-center bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-all shadow-sm">
-            Access Full Ledger
+          <Link href="/bookings" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
+            View All &rarr;
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-white text-[10px] uppercase text-gray-400 font-black tracking-widest border-b border-gray-100">
+            <thead className="bg-white text-xs uppercase text-gray-500 font-semibold border-b border-gray-200">
               <tr>
-                {["Manifest ID", "Identity Hub", "Service Line", "Window", "Settlement", "Audit Status"].map(h => (
-                  <th key={h} className="px-8 py-4 font-bold tracking-widest uppercase">{h}</th>
+                {["Booking ID", "Client", "Package", "Travel Date", "Amount", "Status"].map(h => (
+                  <th key={h} className="px-6 py-4">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-100">
               {recent.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-8 py-16 text-center text-gray-400 font-black uppercase text-xs tracking-widest">Awaiting system transmissions...</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-medium">No recent bookings.</td>
                 </tr>
               ) : recent.map(b => (
-                <tr key={b.id} className="group hover:bg-gray-50/50 transition-all border-b border-gray-50">
-                  <td className="px-8 py-6">
-                    <span className="font-mono text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                      {b.id.split("-")[0].toUpperCase()}
+                <tr key={b.id} className="hover:bg-gray-50/50 transition-all">
+                  <td className="px-6 py-4">
+                    <span className="font-mono text-xs text-gray-600 font-medium">
+                      #{b.id.split("-")[0].toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="font-black text-gray-900 text-[13px] tracking-tighter">{b.clients?.full_name ?? "External Identity"}</span>
-                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">{b.clients?.email}</span>
+                      <span className="font-semibold text-gray-900 text-sm">{b.clients?.full_name ?? "Unknown Client"}</span>
+                      <span className="text-xs text-gray-500 mt-0.5">{b.clients?.email}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2">
-                       <span className="text-[12px] font-bold text-gray-600 leading-tight tracking-tight uppercase">{b.packages?.name ?? "Custom Module"}</span>
-                    </div>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {b.packages?.name ?? "Custom Package"}
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-gray-900 tracking-tighter uppercase">{format(new Date(b.travel_date), "dd MMM yyyy")}</span>
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Deployment Date</span>
-                    </div>
+                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                    {format(new Date(b.travel_date), "dd MMM yyyy")}
                   </td>
-                  <td className="px-8 py-6 font-black text-gray-900 text-[13px] tracking-tighter">
+                  <td className="px-6 py-4 font-semibold text-gray-900 text-sm">
                     {formatCurrency(b.total_amount, b.currency)}
                   </td>
-                  <td className="px-8 py-6">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                        b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                        b.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                        b.status === 'completed' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                        'bg-red-50 text-red-600 border-red-100'
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${
+                        b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                        b.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                        b.status === 'completed' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                        'bg-red-50 text-red-700 border border-red-200'
                     }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        b.status === 'confirmed' ? 'bg-emerald-600' :
-                        b.status === 'pending' ? 'bg-amber-600' :
-                        b.status === 'completed' ? 'bg-blue-600' :
-                        'bg-red-600'
-                      }`} />
-                      {b.status}
+                      {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
                     </span>
                   </td>
                 </tr>

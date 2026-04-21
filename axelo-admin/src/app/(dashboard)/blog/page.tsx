@@ -3,16 +3,47 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, 
+  Plus, Edit2, Trash2, Search, 
   X, RefreshCw, Sparkles, BookOpen, Clock, Calendar, CheckCircle2,
-  FileText, Save, ExternalLink, Code, Link, Zap, Eye, BarChart3,
-  Globe, Share2, ArrowUpRight, ChevronRight, Activity, Brain,
-  Wand2, Layout, Database, ShieldCheck
+  FileText, Save, ExternalLink, Code, Zap, Eye, BarChart3,
+  Globe, Share2, ArrowUpRight, ChevronRight, Activity, Cpu,
+  Wand2, Database, ShieldCheck, AlertCircle
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+
+import {
+  OperationalHeader,
+  AssetBadge,
+  MonoSection,
+  TacticalButton,
+  MissionCard,
+  ManifestSequence
+} from "@/components/OperationalComponents";
+
+const STATUS_VARIANTS = {
+  live: {
+    label: "Live Deployment",
+    variant: "success" as const,
+    icon: Globe,
+    statusType: "active" as const
+  },
+  review: {
+    label: "Intelligence Review",
+    variant: "warning" as const,
+    icon: ShieldCheck,
+    statusType: "calibration" as const
+  },
+  draft: {
+    label: "Narrative Draft",
+    variant: "neutral" as const,
+    icon: FileText,
+    statusType: "draft" as const
+  }
+};
 
 interface BlogPost {
   id: string;
@@ -40,11 +71,14 @@ export default function BlogList() {
     content_html: "",
     keywords: [] as string[],
     read_time_minutes: 5,
+    published: false,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState<"edit" | "preview" | "split">("split");
   const [zaraCommand, setZaraCommand] = useState("");
   const [isRefining, setIsRefining] = useState(false);
+  const [previewViewport, setPreviewViewport] = useState<"mobile" | "tablet" | "desktop">("desktop");
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
   
   const supabase = createClient();
 
@@ -74,7 +108,7 @@ export default function BlogList() {
         });
         const data = await res.json();
         if (data.success) {
-            toast.success("New article drafted successfully!", { id: "gen" });
+            toast.success("New article drafted successfully!");
             fetchPosts();
         } else {
             throw new Error(data.error);
@@ -114,7 +148,7 @@ export default function BlogList() {
                 read_time_minutes: data.refined.read_time_minutes || editorContent.read_time_minutes
             });
             setZaraCommand("");
-            toast.success("Intelligence applied successfully.", { id: toastId });
+            toast.success("AI updates applied successfully.", { id: toastId });
         } else {
             throw new Error(data.error || "Refinement failed");
         }
@@ -134,19 +168,19 @@ export default function BlogList() {
         })
         .eq("id", post.id);
         
-    if (error) toast.error("State update failed.");
+    if (error) toast.error("Update failed.");
     else {
-      toast.success(nextState ? "Article deployed live." : "Article moved to draft.");
+      toast.success(nextState ? "Article published live." : "Article moved to drafts.");
       fetchPosts();
     }
   };
 
   const deletePost = async (id: string) => {
-    if (!confirm("Are you sure you want to permanently delete this content asset?")) return;
+    if (!confirm("Are you sure you want to delete this blog post?")) return;
     const { error } = await supabase.from("blog_posts").delete().eq("id", id);
-    if (error) toast.error("Decommissioning failed.");
+    if (error) toast.error("Delete failed.");
     else {
-        toast.success("Asset removed from manifest.");
+        toast.success("Post removed successfully.");
         fetchPosts();
     }
   };
@@ -160,6 +194,7 @@ export default function BlogList() {
         content_html: post.content_html || "",
         keywords: post.keywords || [],
         read_time_minutes: post.read_time_minutes || 5,
+        published: post.published || false,
     });
   };
 
@@ -175,7 +210,10 @@ export default function BlogList() {
     };
     
     setEditingPost({ id: "new" } as any);
-    setEditorContent(newPost as any);
+    setEditorContent({
+        ...newPost,
+        published: false
+    } as any);
   };
 
   const savePost = async () => {
@@ -192,14 +230,14 @@ export default function BlogList() {
         });
         const data = await res.json();
         if (data.success) {
-            toast.success(isNew ? "Asset created successfully." : "Asset calibration saved.");
+            toast.success(isNew ? "Post created successfully." : "Post saved successfully.");
             setEditingPost(null);
             fetchPosts();
         } else {
             throw new Error(data.error);
         }
     } catch (e: any) {
-        toast.error(e.message || "Commit failed.");
+        toast.error(e.message || "Save failed.");
     }
     setIsSaving(false);
   };
@@ -207,426 +245,470 @@ export default function BlogList() {
   const filtered = posts.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="p-8 pb-32 space-y-10 bg-[#fafafa] min-h-screen">
-      {/* Elite Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-indigo-600/10 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-              <Share2 className="w-3 h-3" />
-              Content Distribution Pipeline
-            </div>
-          </div>
-          <h1 className="text-5xl font-black text-gray-900 tracking-tighter leading-none mb-4 uppercase">
-            Blog <span className="text-indigo-600 italic">Manifest</span>
-          </h1>
-          <p className="text-gray-500 font-medium max-w-xl text-lg leading-relaxed italic">
-            Automating organic discovery through high-fidelity SEO content. Zara AI generates, refines, and deploys high-ranking travel narratives.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4">
-             <Button 
+    <div className="p-8 pb-32 space-y-10 bg-background min-h-screen">
+      <OperationalHeader 
+        title="Intelligence Archive" 
+        subtitle="Strategic Narrative Assets & Content Metrics"
+        icon={Database}
+        actions={
+          <div className="flex items-center gap-4">
+              <TacticalButton 
                 onClick={createNewPost} 
                 variant="outline"
-                className="gap-2 border-gray-200 text-gray-900 bg-white hover:bg-gray-50 font-black uppercase tracking-widest text-[10px] h-14 px-8 rounded-2xl shadow-sm transition-all"
-            >
-                <Plus className="w-5 h-5 text-indigo-600" />
-                Manual Entry
-            </Button>
-            <Button 
+                icon={Plus}
+              >
+                Initialize Draft
+              </TacticalButton>
+              <TacticalButton 
                 onClick={generateAIArticle} 
                 disabled={generating}
-                className="gap-2 bg-gray-900 hover:bg-black text-white font-black uppercase tracking-widest text-[10px] h-14 px-8 rounded-2xl shadow-xl shadow-gray-200 transition-all border-none"
-            >
-                {generating ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 text-emerald-400" />}
-                {generating ? "Agent Writing..." : "Zap AI Deployment"}
-            </Button>
-        </div>
-      </div>
+                isLoading={generating}
+                icon={Sparkles}
+              >
+                AI Synthesis
+              </TacticalButton>
+          </div>
+        }
+      />
 
-      {/* Strategic Content KPIs */}
+      {/* Content Analytics Readout */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: "Live Assets", value: String(posts.filter(p => p.published).length), icon: Globe, color: "emerald", trend: "Broadcasting" },
-          { label: "Neural Drafts", value: String(posts.filter(p => !p.published).length), icon: Brain, color: "amber", trend: "Refining" },
-          { label: "Reach Potential", value: "84K", icon: BarChart3, color: "indigo", trend: "Projected Q2" },
-          { label: "SEO Velocity", value: "92/100", icon: Zap, color: "fuchsia", trend: "Top Tier" },
+          { label: "Active Deployments", value: String(posts.filter(p => p.published).length), icon: Globe, color: "emerald", trend: "Live" },
+          { label: "Drafted Intel", value: String(posts.filter(p => !p.published).length), icon: Cpu, color: "amber", trend: "Pending" },
+          { label: "Reach Index", value: "84K", icon: BarChart3, color: "indigo", trend: "Projected" },
+          { label: "SEO Velocity", value: "92%", icon: Zap, color: "fuchsia", trend: "Optimal" },
         ].map(({ label, value, icon: Icon, color, trend }) => (
-          <div key={label} className="group bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500 relative overflow-hidden">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-${color}-50/50 rounded-full -mr-16 -mt-16 blur-3xl group-hover:scale-150 transition-transform duration-700`} />
-            
-            <div className="flex items-start justify-between mb-8 relative z-10">
-              <div className={`w-14 h-14 rounded-2xl bg-${color}-50 flex items-center justify-center text-${color}-600 shadow-sm group-hover:scale-110 transition-all duration-500`}>
-                <Icon className="w-7 h-7" />
-              </div>
-              <div className="bg-gray-50 px-3 py-1 rounded-full text-[9px] font-black text-gray-400 group-hover:bg-white group-hover:shadow-sm transition-all uppercase tracking-widest leading-none">
-                {trend}
-              </div>
-            </div>
-
-            <div className="relative z-10">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 leading-none">{label}</p>
-              <h3 className="text-4xl font-black text-gray-900 tracking-tighter">
-                {value}
-              </h3>
-            </div>
-          </div>
+          <MissionCard key={label} className="p-0 border-none shadow-none bg-transparent">
+             <div className="flex flex-col gap-4 p-8 bg-card border border-border/50 rounded-[2.5rem] relative overflow-hidden group">
+                <div className={cn("absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:scale-150 transition-transform duration-700", `bg-${color}-500`)} />
+                <div className="flex items-start justify-between relative z-10">
+                  <div className={cn("p-4 rounded-2xl flex items-center justify-center border", `bg-${color}-500/10 border-${color}-500/20 text-${color}-500`)}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <AssetBadge label={trend} variant={color === 'emerald' ? 'success' : color === 'amber' ? 'warning' : 'info'} dot={color === 'emerald'} />
+                </div>
+                <div className="relative z-10">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{label}</p>
+                  <h3 className="text-3xl font-mono font-bold text-foreground tracking-tighter tabular-nums">{value}</h3>
+                </div>
+             </div>
+          </MissionCard>
         ))}
       </div>
 
-      {/* Manifest Table */}
-      <div className="space-y-6">
-          <div className="flex items-center justify-between gap-6 flex-wrap">
-              <div className="flex-1 max-w-xl relative">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                <input 
-                  value={search} onChange={e => setSearch(e.target.value)} 
-                  placeholder="Identify content asset..."
-                  className="w-full pl-14 pr-6 h-14 border border-gray-100 rounded-[24px] text-sm bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all font-black tracking-tight shadow-sm placeholder:text-gray-300" 
-                />
-              </div>
-
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
-                  <Activity className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                  {filtered.length} Content Nodes Registry
-              </div>
-          </div>
-
-          <div className="bg-white rounded-[40px] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden relative">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-[#fcfcfc] text-[10px] uppercase text-gray-400 font-bold tracking-[0.2em] border-b border-gray-100">
-                  <tr>
-                    <th className="px-10 py-7">Content Identity</th>
-                    <th className="px-8 py-7">Consumption Index</th>
-                    <th className="px-8 py-7">Timeline</th>
-                    <th className="px-8 py-7">Integrity Status</th>
-                    <th className="px-10 py-7 text-right">Sequence</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 text-gray-600">
-                  {loading ? (
-                    <tr><td colSpan={5} className="px-8 py-32 text-center"><RefreshCw className="w-12 h-12 animate-spin text-indigo-600 mx-auto opacity-10" /></td></tr>
-                  ) : filtered.length === 0 ? (
-                    <tr><td colSpan={5} className="px-8 py-40 text-center text-gray-300 font-black uppercase text-[11px] tracking-[0.4em] italic opacity-50">Zero Content Signals Detected.</td></tr>
-                  ) : filtered.map(post => (
-                    <tr key={post.id} className="group hover:bg-[#fafafa] transition-all duration-300">
-                      <td className="px-10 py-7 max-w-[450px]">
-                        <div className="flex items-center gap-6">
-                            <div className="w-16 h-16 rounded-[24px] bg-gray-50 border-4 border-white flex items-center justify-center font-black text-gray-300 text-2xl shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 overflow-hidden">
-                                {post.published ? (
-                                  <div className="w-full h-full bg-emerald-500 flex items-center justify-center text-white italic">
-                                     <CheckCircle2 className="w-8 h-8" />
-                                  </div>
-                                ) : (
-                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 italic font-black">
-                                     {post.title[0]}
-                                  </div>
-                                )}
-                            </div>
-                            <div>
-                                <span className="font-black text-gray-900 tracking-tighter text-xl uppercase italic block underline decoration-gray-100 group-hover:text-indigo-600 transition-colors truncate">
-                                  {post.title || "Untitled Masterpiece"}
-                                </span>
-                                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-1">/{post.slug}</p>
-                            </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-7">
-                         <div className="flex items-center gap-2.5 text-[11px] font-black text-indigo-600 uppercase tracking-tight bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 w-fit">
-                            <Clock className="w-3.5 h-3.5 stroke-[3px]" />
-                            {post.read_time_minutes} MIN READ
-                        </div>
-                      </td>
-                      <td className="px-8 py-7">
-                        <div className="flex flex-col">
-                           <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Encoded On</span>
-                           <span className="font-bold text-gray-900 text-sm tracking-tight">{new Date(post.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-7">
-                        <span className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-[20px] text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm transition-all ${
-                          post.published ? "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-50" : "bg-amber-50 text-amber-600 border-amber-100 shadow-amber-50"
-                        }`}>
-                          {post.published ? <Globe className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />}
-                          {post.published ? "Deployed Live" : "Neural Draft"}
-                        </span>
-                      </td>
-                      <td className="px-10 py-7 text-right">
-                        <div className="flex items-center justify-end gap-3 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                             <button onClick={() => togglePublished(post)} className="p-3 bg-white hover:bg-gray-50 border border-gray-100 text-gray-400 hover:text-indigo-600 rounded-2xl shadow-sm transition-all" title={post.published ? "Deactivate Presence" : "Execute Deployment"}>
-                                {post.published ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
-                             </button>
-                             <button onClick={() => handleEdit(post)} className="p-3 bg-white hover:bg-gray-900 border border-gray-100 hover:border-gray-900 text-gray-400 hover:text-white rounded-2xl shadow-sm transition-all group/btn">
-                                <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                             </button>
-                             <button onClick={() => deletePost(post.id)} className="p-3 bg-white hover:bg-rose-50 border border-gray-100 hover:border-rose-100 text-gray-400 hover:text-rose-600 rounded-2xl shadow-sm transition-all">
-                                <Trash2 className="w-5 h-5" />
-                             </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <div className="flex items-center justify-between gap-6 pb-2">
+        <div className="flex-1 max-w-xl relative">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input 
+            value={search} onChange={e => setSearch(e.target.value)} 
+            placeholder="Search Intelligence Archive..."
+            className="w-full pl-14 pr-6 h-14 border border-border bg-card/50 rounded-[24px] text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all font-mono shadow-inner" 
+          />
+        </div>
+        <AssetBadge label={`${filtered.length} ARCHIVED NODES`} variant="neutral" />
       </div>
 
-      {/* Elite Editor Command Center */}
+      {/* Intelligence Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <AnimatePresence mode="popLayout">
+          {loading ? (
+             Array.from({ length: 8 }).map((_, i) => (
+               <div key={i} className="h-[320px] rounded-[2.5rem] bg-card border border-border/50 animate-pulse" />
+             ))
+          ) : filtered.length === 0 ? (
+            <div className="col-span-full py-32 flex flex-col items-center justify-center gap-8 bg-card rounded-[40px] border border-dashed border-border/60">
+               <div className="w-24 h-24 rounded-[36px] bg-muted/50 border border-border flex items-center justify-center text-muted-foreground/20">
+                  <FileText className="w-12 h-12" />
+               </div>
+               <p className="text-lg font-bold text-foreground uppercase tracking-tight">No Intelligence Found</p>
+               <TacticalButton onClick={createNewPost} variant="outline">Initialize First Entry</TacticalButton>
+            </div>
+          ) : filtered.map(post => {
+            // High-fidelity status resolution
+            let status: 'live' | 'review' | 'draft' = 'draft';
+            if (post.published) status = 'live';
+            else if (post.content_html?.length > 1000 || post.meta_description) status = 'review';
+            
+            const cfg = STATUS_VARIANTS[status];
+            
+            return (
+              <MissionCard 
+                key={post.id} 
+                label={`ARCHIVE-ID: ${post.id.split("-")[0].toUpperCase()}`}
+                status={cfg.statusType}
+                className="flex flex-col h-full hover:scale-[1.02] active:scale-[0.98] transition-transform cursor-pointer"
+              >
+                <div onClick={() => handleEdit(post)} className="flex flex-col h-full gap-5">
+                   <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                         <h3 className="text-lg font-bold text-foreground tracking-tight line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                           {post.title || "Untitled Intelligence"}
+                         </h3>
+                         <div className="flex items-center gap-2">
+                           <AssetBadge label={`${post.read_time_minutes} MIN`} variant="neutral" dot={false} />
+                           <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase opacity-50">/{post.slug}</span>
+                         </div>
+                      </div>
+                      <div className="p-3 bg-muted/50 rounded-2xl border border-border/40 shrink-0">
+                         <cfg.icon className={cn("w-5 h-5", status === "live" ? "text-emerald-500" : "text-muted-foreground")} />
+                      </div>
+                   </div>
+
+                   <div className="space-y-4">
+                      <div className="p-4 bg-muted/30 rounded-2xl border border-border/30">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                          <Activity className="w-3 h-3" /> SEO Metas
+                        </p>
+                        <p className="text-xs font-medium text-foreground/80 line-clamp-2 italic leading-relaxed">
+                          {post.meta_description || "No metadata synchronization detected."}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                         <MonoSection label="Created" value={format(new Date(post.created_at), "dd MMM yy")} className="bg-card/50" />
+                         <MonoSection label="Reach" value={status === 'live' ? "Optimal" : "Pending"} className="bg-card/50" />
+                      </div>
+                   </div>
+
+                   <div className="mt-auto pt-5 border-t border-border/40 flex items-center justify-between">
+                      <AssetBadge label={cfg.label} variant={cfg.variant} />
+                      <div className="flex items-center gap-2">
+                        <button onClick={(e) => { e.stopPropagation(); deletePost(post.id); }} className="p-2 hover:bg-rose-500/10 hover:text-rose-500 rounded-lg transition-colors text-muted-foreground">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                   </div>
+                </div>
+              </MissionCard>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Intelligence Command Center (Editor) */}
       <Dialog open={!!editingPost} onOpenChange={() => setEditingPost(null)}>
-        <DialogContent className="max-w-[1700px] w-[98vw] h-[95vh] rounded-[48px] p-0 border-none shadow-3xl overflow-hidden bg-white/95 backdrop-blur-3xl flex flex-col transition-all duration-700">
-            {/* Command Header */}
-            <div className="bg-white/80 border-b border-gray-100 p-8 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-8">
-                    <div className="w-16 h-16 bg-indigo-600 flex items-center justify-center font-black text-white text-2xl rounded-[24px] shadow-2xl shadow-indigo-100 italic">
+        <DialogContent className="max-w-[100vw] w-screen h-screen m-0 p-0 border-none bg-background rounded-none flex flex-col ring-0 focus:ring-0">
+            {/* Tactical Header HUD */}
+             <div className="bg-card border-b border-border p-6 flex items-center justify-between z-50">
+                <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 bg-primary flex items-center justify-center font-bold text-white text-xl rounded-2xl shadow-xl shadow-primary/20 italic">
                         {editingPost?.id === "new" ? "N" : "E"}
                     </div>
                     <div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">
-                            {editingPost?.id === "new" ? "New Content Unit" : "Calibrating Asset"}
+                        <h2 className="text-xl font-bold text-foreground tracking-tighter uppercase leading-none">
+                            {editingPost?.id === "new" ? "Initialize Intelligence" : "Calibrate Narrative"}
                         </h2>
-                        <div className="flex items-center gap-6 mt-3">
-                            <div className="flex bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                        <div className="flex items-center gap-3 mt-3">
+                            <div className="flex items-center bg-muted/50 p-1 rounded-xl border border-border/50">
                                 {[
-                                    { id: "edit", label: "Logic", icon: Code },
-                                    { id: "split", label: "Dual View", icon: Layout },
-                                    { id: "preview", label: "Hologram", icon: Eye }
-                                ].map(tab => (
+                                    { id: "edit", icon: Edit2, label: "Editor" },
+                                    { id: "split", icon: Code, label: "Split" },
+                                    { id: "preview", icon: Eye, label: "Preview" }
+                                ].map((tab) => (
                                     <button 
                                         key={tab.id}
                                         onClick={() => setViewMode(tab.id as any)} 
-                                        className={`flex items-center gap-2.5 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === tab.id ? "bg-white shadow-xl text-indigo-600" : "text-gray-400 hover:text-gray-900"}`}
+                                        className={cn(
+                                          "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
+                                          viewMode === tab.id ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-muted"
+                                        )}
                                     >
-                                        <tab.icon className="w-3.5 h-3.5" />
+                                        <tab.icon className="w-3 h-3" />
                                         {tab.label}
                                     </button>
                                 ))}
                             </div>
+                            
+                            {(viewMode === "preview" || viewMode === "split") && (
+                                <div className="flex items-center gap-1 ml-2 p-1 bg-muted/30 rounded-xl">
+                                    {[
+                                        { id: "mobile", label: "Mobile" },
+                                        { id: "tablet", label: "Tablet" },
+                                        { id: "desktop", label: "Desktop" }
+                                    ].map((vp) => (
+                                        <button 
+                                            key={vp.id}
+                                            onClick={() => setPreviewViewport(vp.id as any)}
+                                            className={cn(
+                                                "px-3 py-1.5 rounded-lg transition-all text-[9.5px] font-bold uppercase tracking-wider",
+                                                previewViewport === vp.id ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                                            )}
+                                        >
+                                            {vp.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
                 
                 <div className="flex items-center gap-4">
-                    <div className="bg-emerald-50 px-5 py-3 rounded-2xl border border-emerald-100 hidden xl:flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Autosync Active</span>
+                    <div className="flex flex-col items-end mr-4 border-r border-border pr-6">
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Deployment Status</span>
+                        <AssetBadge 
+                          label={editorContent.published ? "LIVE DEPLOYMENT" : "INTELLIGENCE REVIEW"} 
+                          variant={editorContent.published ? "success" : "warning"} 
+                          dot={editorContent.published}
+                        />
                     </div>
-                    <Button onClick={() => setEditingPost(null)} variant="ghost" className="rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] text-gray-400 hover:text-gray-900 px-8 h-14">Discard</Button>
-                    <Button 
-                        onClick={savePost} 
-                        disabled={isSaving} 
-                        className="rounded-[24px] bg-gray-900 hover:bg-black text-white font-black uppercase text-[11px] tracking-[0.2em] px-12 h-14 shadow-2xl shadow-gray-200 transition-all border-none gap-3"
-                    >
-                        {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5 text-indigo-400" />}
-                        {isSaving ? "Synchronizing..." : "Commit Asset"}
-                    </Button>
+                    
+                    <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setEditorContent({...editorContent, published: !editorContent.published})}
+                          className={cn(
+                            "px-6 h-11 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-3",
+                            editorContent.published 
+                              ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20" 
+                              : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20"
+                          )}
+                        >
+                          {editorContent.published ? <RefreshCw className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                          {editorContent.published ? "Retract Intel" : "Authorise Live"}
+                        </button>
+
+                        <TacticalButton 
+                            onClick={savePost} 
+                            isLoading={isSaving}
+                            disabled={isRefining}
+                            icon={Save}
+                            className="px-8 h-11 min-w-[180px]"
+                        >
+                            Commit Changes
+                        </TacticalButton>
+
+                        <button 
+                          onClick={() => setEditingPost(null)}
+                          className="p-3 hover:bg-muted rounded-xl transition-colors text-muted-foreground"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden flex bg-[#fbfbfc]">
-                {/* Logical Editor Workspace */}
+            <div className="flex-1 overflow-hidden flex">
+                {/* 3-Pane Tactical View */}
+                
+                {/* Pane 1: Core Intel (Metadata) - Collapsible or side fixed */}
+                <div className="w-[300px] border-r border-border bg-muted/20 overflow-y-auto p-6 hidden 2xl:block">
+                  <div className="space-y-8">
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Core Metadata</h3>
+                      <MonoSection label="Slug Descriptor" value={
+                        <input 
+                          value={editorContent.slug}
+                          onChange={e => setEditorContent({...editorContent, slug: e.target.value})}
+                          className="w-full bg-transparent border-none outline-none text-xs font-mono p-0"
+                        />
+                      } />
+                      <MonoSection label="Consumption Index" value={
+                        <input 
+                          type="number"
+                          value={editorContent.read_time_minutes}
+                          onChange={e => setEditorContent({...editorContent, read_time_minutes: parseInt(e.target.value)})}
+                          className="w-full bg-transparent border-none outline-none text-xs font-mono p-0"
+                        />
+                      } />
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">SEO Calibration</h3>
+                      <div className="p-4 bg-card border border-border rounded-2xl space-y-4">
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Meta Narrative</label>
+                        <textarea 
+                          value={editorContent.meta_description}
+                          onChange={e => setEditorContent({...editorContent, meta_description: e.target.value})}
+                          className="w-full h-32 bg-transparent border-none outline-none text-xs leading-relaxed resize-none p-0"
+                          placeholder="Inject search engine intelligence..."
+                        />
+                        <div className="flex justify-between items-center text-[9px] font-mono border-t border-border/50 pt-2">
+                          <span className="text-muted-foreground uppercase">Sync Delta: {editorContent.meta_description.length}/160</span>
+                          <div className={cn("w-2 h-2 rounded-full", editorContent.meta_description.length > 50 && editorContent.meta_description.length <= 160 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <ManifestSequence 
+                            label="Keyword Matrix" 
+                            items={editorContent.keywords} 
+                            onChange={(keywords) => setEditorContent({...editorContent, keywords})}
+                            icon={Database}
+                            color="primary"
+                        />
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Deployment Logic</h3>
+                      <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
+                        <div className="flex items-center justify-between mb-4">
+                           <span className="text-[10px] font-bold text-foreground">Status</span>
+                           <AssetBadge label={editorContent.published ? "LIVE" : "DRAFT"} variant={editorContent.published ? "success" : "neutral"} />
+                        </div>
+                        <TacticalButton 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => setEditorContent({...editorContent, published: !editorContent.published})}
+                        >
+                          Toggle Presence
+                        </TacticalButton>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pane 2: Content Manifest (Editor) */}
                 {(viewMode === "edit" || viewMode === "split") && (
-                    <div className={`${viewMode === "split" ? "w-[60%]" : "w-full"} h-full overflow-hidden flex flex-col bg-white border-r border-gray-50 relative`}>
-                        {/* Control Bar */}
-                        <div className="px-10 py-5 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between sticky top-0 z-20 backdrop-blur-xl">
-                            <div className="flex items-center gap-6">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Structural Registry</span>
-                                <div className="flex items-center gap-2">
-                                    {["H1", "H2", "H3", "QUOTE", "LINK"].map(tool => (
-                                      <button key={tool} className="px-3 py-1.5 bg-white border border-gray-100 rounded-lg text-[9px] font-black text-gray-500 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm">{tool}</button>
-                                    ))}
+                    <div className={cn("relative h-full overflow-hidden flex flex-col bg-card", viewMode === "split" ? "flex-1" : "w-full")}>
+                        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+                            <div className="max-w-4xl mx-auto space-y-12">
+                                <textarea 
+                                    className="w-full bg-transparent border-none outline-none text-6xl font-bold text-foreground tracking-tighter uppercase placeholder:text-muted-foreground/10 resize-none overflow-hidden"
+                                    value={editorContent.title}
+                                    onChange={e => {
+                                      setEditorContent({...editorContent, title: e.target.value});
+                                      e.target.style.height = 'auto';
+                                      e.target.style.height = e.target.scrollHeight + 'px';
+                                    }}
+                                    rows={1}
+                                    placeholder="Manifest Title..."
+                                />
+                                
+                                <div className="min-h-[70vh] border-l-2 border-primary/10 pl-8 ml-2">
+                                  <textarea 
+                                      className="w-full h-full bg-transparent border-none outline-none font-mono text-foreground/80 text-lg leading-relaxed resize-none placeholder:text-muted-foreground/10 selection:bg-primary/20"
+                                      value={editorContent.content_html}
+                                      onChange={e => {
+                                        setEditorContent({...editorContent, content_html: e.target.value});
+                                        // Auto-expand height
+                                        e.target.style.height = 'auto';
+                                        e.target.style.height = e.target.scrollHeight + 'px';
+                                      }}
+                                      placeholder="Begin intelligence sequence..."
+                                  />
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest mr-4">
-                                    Lines: {editorContent.content_html.split('\n').length}
+                        </div>
+
+                        {/* Zara Command Pad */}
+                        <div className="p-8 bg-card/95 border-t border-border shadow-[0_-20px_50px_rgba(0,0,0,0.12)] relative z-10">
+                           <div className="max-w-4xl mx-auto space-y-5">
+                              {/* Suggestion Chips HUD */}
+                              <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
+                                {[
+                                  { label: "Enchant Narrative", cmd: "Make the tone more poetic, adventurous, and emotionally engaging" },
+                                  { label: "SEO Calibration", cmd: "Optimize headings, keywords, and meta structure for high-velocity SEO" },
+                                  { label: "Expand Depth", cmd: "Add more technical and cultural detail about the locations and wildlife" },
+                                  { label: "Narrative Polish", cmd: "Fix grammar, improve sentence flow, and sharpen the prose" },
+                                  { label: "Safari Spirit", cmd: "Infuse emotional wonder and the magic of the wild into every paragraph" }
+                                ].map((s) => (
+                                  <button 
+                                    key={s.label}
+                                    onClick={() => setZaraCommand(s.cmd)}
+                                    className="shrink-0 px-4 py-2 rounded-full bg-muted/40 border border-border/50 text-[9.5px] font-bold text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all uppercase tracking-wider"
+                                  >
+                                    {s.label}
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Input + Trigger */}
+                              <div className="flex gap-4">
+                                <div className="flex-1 bg-muted/30 rounded-2xl border border-border flex items-center px-6 gap-4 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 transition-all group">
+                                   <Sparkles className="w-5 h-5 text-primary shrink-0 group-focus-within:animate-pulse" />
+                                   <input 
+                                      value={zaraCommand}
+                                      onChange={e => setZaraCommand(e.target.value)}
+                                      onKeyDown={e => e.key === "Enter" && handleZaraCommand()}
+                                      className="flex-1 bg-transparent border-none outline-none h-14 text-sm font-medium placeholder:text-muted-foreground/30"
+                                      placeholder="Instruct Zara AI to calibrate the narrative..."
+                                   />
                                 </div>
-                                <Button 
-                                    onClick={generateAIArticle}
-                                    className="bg-indigo-600/10 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl font-black text-[9px] uppercase tracking-widest h-9 px-4 border border-indigo-100 shadow-sm transition-all"
+                                <TacticalButton 
+                                  onClick={handleZaraCommand} 
+                                  isLoading={isRefining}
+                                  disabled={!zaraCommand.trim() || isRefining}
+                                  icon={Zap}
+                                  className="px-10 shrink-0"
                                 >
-                                    <Wand2 className="w-3.5 h-3.5 mr-2" /> Neural Rewrite
-                                </Button>
-                            </div>
+                                  Neural Sync
+                                </TacticalButton>
+                              </div>
+                           </div>
                         </div>
-                        
-                        <div className="flex-1 overflow-y-auto p-16 custom-scrollbar scroll-smooth">
-                            <div className="max-w-4xl mx-auto space-y-16">
-                                <div className="space-y-6">
-                                    <input 
-                                        className="w-full bg-transparent border-0 focus:ring-0 text-7xl font-black text-gray-900 tracking-[-0.05em] uppercase italic placeholder:text-gray-100 selection:bg-indigo-100 transition-all leading-tight"
-                                        value={editorContent.title}
-                                        onChange={e => setEditorContent({...editorContent, title: e.target.value})}
-                                        placeholder="Master Title..."
-                                    />
-                                    <div className="flex items-center gap-6">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-xl">
-                                            <Link className="w-3.5 h-3.5 text-indigo-500" />
-                                            /{editorContent.slug}
-                                        </div>
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-xl">
-                                            <Clock className="w-3.5 h-3.5 text-indigo-500" />
-                                            {editorContent.read_time_minutes} MINS
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div className="relative group">
-                                    <textarea 
-                                        className="w-full min-h-[1000px] bg-transparent border-0 focus:ring-0 font-mono text-gray-600 text-lg leading-loose resize-none p-0 selection:bg-indigo-100 placeholder:text-gray-100/50"
-                                        value={editorContent.content_html}
-                                        onChange={e => setEditorContent({...editorContent, content_html: e.target.value})}
-                                        placeholder="Deploy high-fidelity travel narratives here..."
-                                    />
-                                    {/* Scroll Indicator */}
-                                    <div className="absolute right-0 top-0 h-full w-1.5 bg-gray-50 rounded-full opacity-20 group-hover:opacity-100 transition-opacity" />
-                                </div>
-
-                                {/* Advanced Calibration (SEO) */}
-                                <div className="pt-20 border-t-2 border-dashed border-gray-100 space-y-12 pb-32">
-                                    <div className="flex items-center gap-3">
-                                       <Database className="w-5 h-5 text-indigo-600" />
-                                       <h3 className="text-[12px] font-black text-gray-900 uppercase tracking-[0.3em]">Neural SEO Payload</h3>
-                                    </div>
-
-                                    <div className="grid grid-cols-5 gap-12">
-                                        <div className="col-span-3 space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Meta Transmission (Description)</label>
-                                            <textarea 
-                                                className="w-full h-40 p-6 rounded-[32px] bg-gray-50 border border-gray-100 focus:bg-white focus:ring-8 focus:ring-indigo-50 transition-all text-sm leading-relaxed font-bold text-gray-600 shadow-inner"
-                                                value={editorContent.meta_description}
-                                                onChange={e => setEditorContent({...editorContent, meta_description: e.target.value})}
-                                                placeholder="Write a snippet that guarantees clicks..."
-                                            />
-                                            <div className="flex justify-between items-center text-[10px] font-black px-4">
-                                                <span className="text-gray-300 italic">Signature Count: {editorContent.meta_description.length} chars</span>
-                                                <span className={editorContent.meta_description.length > 160 ? "text-amber-500" : "text-emerald-500"}>Optimal: 155-160</span>
-                                            </div>
-                                        </div>
-                                        <div className="col-span-2 space-y-8">
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Asset Slug URI</label>
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center gap-3 shadow-inner">
-                                                    <Globe className="w-4 h-4 text-indigo-600 shrink-0" />
-                                                    <input 
-                                                        className="w-full bg-transparent text-[13px] font-black outline-none tracking-tight text-gray-900"
-                                                        value={editorContent.slug}
-                                                        onChange={e => setEditorContent({...editorContent, slug: e.target.value})}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Consumption Time (Mins)</label>
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center gap-3 shadow-inner">
-                                                    <Clock className="w-4 h-4 text-indigo-600 shrink-0" />
-                                                    <input 
-                                                        type="number"
-                                                        className="w-full bg-transparent text-[13px] font-black outline-none tracking-tight text-gray-900"
-                                                        value={editorContent.read_time_minutes}
-                                                        onChange={e => setEditorContent({...editorContent, read_time_minutes: parseInt(e.target.value)})}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {/* Neural Calibration Overlay */}
+                        <AnimatePresence>
+                          {isRefining && (
+                            <motion.div 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="absolute inset-0 z-50 bg-background/70 backdrop-blur-md flex flex-col items-center justify-center gap-8"
+                            >
+                               <div className="relative">
+                                  <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                     <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+                                  </div>
+                               </div>
+                               <div className="text-center space-y-2">
+                                  <p className="text-xl font-bold uppercase tracking-[0.3em] text-foreground">Neural Calibration</p>
+                                  <p className="text-[10px] font-mono text-muted-foreground animate-pulse">SYNCHRONIZING NARRATIVE VECTORS...</p>
+                               </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                     </div>
                 )}
 
-                {/* Holographic Preview Surface */}
+                {/* Pane 3: Holographic Preview (Live View) */}
                 {(viewMode === "preview" || viewMode === "split") && (
-                    <div className={`${viewMode === "split" ? "w-[40%]" : "w-full"} h-full overflow-hidden flex flex-col bg-[#f8f9fa] border-l border-gray-100`}>
-                        {/* Rendering Intelligence */}
-                        <div className="px-10 py-6 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm">
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Holographic Projection</span>
-                            <div className="flex gap-2">
-                                <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 uppercase tracking-widest leading-none">Ready to deploy</span>
+                    <div className={cn("h-full overflow-hidden flex flex-col bg-muted/10 border-l border-border", viewMode === "split" ? "w-[45%]" : "flex-1")}>
+                        <div className="bg-card border-b border-border px-8 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Holographic Render</span>
+                              <span className="px-2.5 py-1 bg-muted/50 rounded-lg text-[9px] font-bold text-muted-foreground uppercase tracking-wider capitalize">{previewViewport}</span>
+                            </div>
+                            <div className="flex gap-1.5 items-center">
+                               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                               <span className="text-[9px] font-bold text-emerald-500 uppercase">Live Sync</span>
                             </div>
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto p-12 lg:p-20 custom-scrollbar bg-slate-50/50">
-                            <div className="max-w-2xl mx-auto bg-white rounded-[48px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.06)] overflow-hidden min-h-full border border-white relative">
-                                {/* Simulated Browser Controls */}
-                                <div className="h-10 bg-gray-50 border-b border-gray-100 flex items-center px-8 gap-1.5 shrink-0 opacity-40">
-                                   <div className="w-2.5 h-2.5 rounded-full bg-gray-200" />
-                                   <div className="w-2.5 h-2.5 rounded-full bg-gray-200" />
-                                   <div className="w-2.5 h-2.5 rounded-full bg-gray-200" />
-                                </div>
-
-                                <div className="p-16 lg:p-24 prose prose-slate prose-h1:text-5xl prose-h1:font-black prose-h1:tracking-tighter prose-h1:uppercase prose-h1:italic prose-h2:text-3xl prose-h2:font-black prose-h2:tracking-tight prose-p:text-gray-500 prose-p:text-lg prose-p:leading-relaxed prose-a:text-indigo-600 prose-a:font-black prose-a:underline prose-li:font-medium">
-                                    <div className="mb-20">
-                                        <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-indigo-600 text-white rounded-[24px] text-[10px] font-black uppercase tracking-[0.3em] mb-10 shadow-2xl shadow-indigo-200 italic">
-                                          <Sparkles className="w-4 h-4" /> Destination Signal
+                        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-slate-950/5 flex justify-center">
+                            <motion.div 
+                                animate={{ 
+                                    width: previewViewport === "mobile" ? 375 : previewViewport === "tablet" ? 768 : "100%",
+                                    maxWidth: previewViewport === "mobile" ? 375 : previewViewport === "tablet" ? 768 : 800
+                                }}
+                                className="bg-white rounded-[3rem] shadow-2xl border-[12px] border-slate-900 overflow-hidden min-h-[90%] self-start"
+                            >
+                                <div className="p-12 md:p-16 prose prose-slate max-w-none prose-h1:text-4xl prose-h1:font-bold prose-h1:tracking-tighter prose-h1:uppercase prose-p:text-gray-500 prose-p:leading-relaxed selection:bg-primary/20">
+                                    <div className="mb-12">
+                                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-full text-[9px] font-bold uppercase tracking-widest mb-6">
+                                          Travel Intelligence Archive
                                         </div>
-                                        <h1 className="leading-none mb-8">{editorContent.title || "Waiting for signal..."}</h1>
-                                        <div className="flex items-center gap-4 text-gray-300 font-black uppercase text-[10px] tracking-widest italic">
-                                           <span>Axelo Exclusive</span>
-                                           <span className="w-2 h-2 rounded-full bg-gray-100" />
-                                           <span>{editorContent.read_time_minutes} Minute Read</span>
+                                        <h1 className="leading-tight text-slate-900 lowercase!">{editorContent.title || "Untitled Intelligence"}</h1>
+                                        <div className="flex items-center gap-4 text-slate-400 font-bold uppercase text-[9px] tracking-widest mt-6">
+                                           <span className="flex items-center gap-2"><Clock className="w-3 h-3" /> {editorContent.read_time_minutes} Min Read</span>
+                                           <span>•</span>
+                                           <span className="flex items-center gap-2"><Calendar className="w-3 h-3" /> {format(new Date(), "MMMM yyyy")}</span>
                                         </div>
                                     </div>
-
-                                    <div className="selection:bg-indigo-600 selection:text-white" dangerouslySetInnerHTML={{ __html: editorContent.content_html }} />
+                                    <div className="text-slate-700 leading-loose prose-headings:text-slate-900 prose-a:text-primary prose-img:rounded-3xl" dangerouslySetInnerHTML={{ __html: editorContent.content_html }} />
                                     
-                                    {/* Strategic Signature */}
-                                    <div className="mt-24 pt-12 border-t-4 border-gray-50 flex items-center justify-between not-prose">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-16 h-16 rounded-[24px] bg-gray-900 flex items-center justify-center text-white font-black italic text-3xl shadow-2xl">A</div>
-                                            <div>
-                                                <p className="text-sm font-black text-gray-900 uppercase italic">Axelo Intelligence</p>
-                                                <p className="text-[11px] font-bold text-gray-400 tracking-tight">Authentic Safari Logistics</p>
-                                            </div>
-                                        </div>
-                                        <div className="w-16 h-16 rounded-full border-4 border-emerald-50 flex items-center justify-center">
-                                           <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-                                        </div>
+                                    <div className="mt-20 pt-12 border-t border-slate-100 italic text-slate-400 text-sm">
+                                      End of Intelligence Sequence. Published by Axelo Tours & Safari Ltd.
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
-                        
-                        {/* Zara Intelligence Command Pad */}
-                        {viewMode === "split" && (
-                            <div className="shrink-0 p-10 bg-white border-t border-gray-100 shadow-[0_-20px_60px_rgba(0,0,0,0.03)] z-30">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-100">
-                                            <Sparkles className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                           <span className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 block">Zara Neural Link</span>
-                                           <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Natural Language Logic Unit</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl text-[9px] font-black text-gray-400 uppercase tracking-widest border border-gray-100">
-                                      <Activity className="w-3 h-3 text-emerald-500" />
-                                      Sync: Ready
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 p-2 bg-gray-50 border border-gray-100 rounded-[28px] focus-within:ring-8 focus-within:ring-indigo-50 focus-within:border-indigo-100 transition-all">
-                                    <input 
-                                        className="flex-1 bg-transparent border-none px-6 text-sm font-bold text-gray-900 outline-none placeholder:text-gray-200"
-                                        placeholder="Command Zara: 'Enchant the intro', 'Optimize for SEO', 'Add luxury tips'..."
-                                        value={zaraCommand}
-                                        onChange={e => setZaraCommand(e.target.value)}
-                                        onKeyDown={e => e.key === "Enter" && handleZaraCommand()}
-                                        disabled={isRefining}
-                                    />
-                                    <Button 
-                                        onClick={handleZaraCommand}
-                                        disabled={isRefining || !zaraCommand.trim()}
-                                        className="bg-indigo-600 hover:bg-black text-white rounded-[20px] px-8 h-12 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-100 transition-all"
-                                    >
-                                        {isRefining ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2 text-emerald-400" />}
-                                        {isRefining ? "Processing" : "Execute"}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
+
                     </div>
                 )}
             </div>

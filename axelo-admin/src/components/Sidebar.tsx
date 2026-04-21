@@ -27,20 +27,20 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Dashboard",   href: "/",             icon: LayoutDashboard },
-  { label: "Bookings",    href: "/bookings",     icon: CalendarCheck },
-  { label: "Packages",    href: "/packages",     icon: Package },
-  { label: "Clients",     href: "/clients",      icon: Users },
-  { label: "Payments",    href: "/payments",     icon: CreditCard },
-  { label: "Costing",     href: "/costing",      icon: Calculator },
-  { label: "Vouchers",    href: "/vouchers",     icon: FileText },
-  { label: "Market Intel",href: "/intel",        icon: Globe },
-  { label: "Calls",       href: "/calls",        icon: Phone },
-  { label: "Outreach",    href: "/outreach",     icon: Mail },
-  { label: "Partners",    href: "/partners",     icon: Handshake },
-  { label: "Properties",  href: "/properties",   icon: Building2 },
-  { label: "Blog",        href: "/blog",         icon: BookOpen },
-  { label: "Settings",    href: "/settings",     icon: Settings },
+  { label: "System Overview",        href: "/",             icon: LayoutDashboard },
+  { label: "Operational Manifests",  href: "/bookings",     icon: CalendarCheck },
+  { label: "Asset Inventory",        href: "/packages",     icon: Package },
+  { label: "Entity Registry",        href: "/clients",      icon: Users },
+  { label: "Transaction Ledger",     href: "/payments",     icon: CreditCard },
+  { label: "Fiscal Calibration",     href: "/costing",      icon: Calculator },
+  { label: "Deployment Tokens",      href: "/vouchers",     icon: FileText },
+  { label: "Strategic Intelligence", href: "/intel",        icon: Globe },
+  { label: "Voice Intel",            href: "/calls",        icon: Phone },
+  { label: "Engagement Ops",         href: "/outreach",     icon: Mail },
+  { label: "Partner Matrix",         href: "/partners",     icon: Handshake },
+  { label: "Lodge Registry",         href: "/properties",   icon: Building2 },
+  { label: "Intelligence Archive",   href: "/blog",         icon: BookOpen },
+  { label: "System Core",            href: "/settings",     icon: Settings },
 ];
 
 export function Sidebar() {
@@ -76,10 +76,10 @@ export function Sidebar() {
             >
               <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">A</div>
               <div className="flex flex-col">
-                <span className="font-display font-black text-white text-lg leading-tight tracking-tight">
-                  AXELO <span className="text-accent">ADMIN</span>
+                <span className="font-bold text-white text-lg leading-tight tracking-tight">
+                  AXELO <span className="text-accent underline decoration-primary/20 decoration-2 underline-offset-4">CORE</span>
                 </span>
-                <span className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold">Enterprise Portal</span>
+                <span className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] mt-1 italic">System Operator</span>
               </div>
             </motion.div>
           )}
@@ -102,7 +102,7 @@ export function Sidebar() {
       {/* Navigation Space */}
       <nav className="flex-grow py-6 overflow-y-auto custom-scrollbar">
         <div className="px-4 mb-4">
-          {!collapsed && <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-4">Management</p>}
+        {!collapsed && <p className="text-[10px] font-black text-white/20 uppercase mb-5 tracking-[0.3em] flex items-center gap-2 px-2 italic"><div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" /> Operational Command</p>}
           <ul className="space-y-1.5">
             {NAV_ITEMS.slice(0, 7).map(({ label, href, icon: Icon }) => {
               const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -139,7 +139,7 @@ export function Sidebar() {
         </div>
 
         <div className="px-4 pt-6 mt-6 border-t border-white/5">
-          {!collapsed && <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-4">Operations</p>}
+          {!collapsed && <p className="text-[10px] font-black text-white/20 uppercase mb-5 tracking-[0.3em] flex items-center gap-2 px-2 italic"><div className="w-1.5 h-1.5 rounded-full bg-white/10" /> Sub-Systems</p>}
           <ul className="space-y-1.5">
             {NAV_ITEMS.slice(7).map(({ label, href, icon: Icon }) => {
               const isActive = pathname.startsWith(href);
